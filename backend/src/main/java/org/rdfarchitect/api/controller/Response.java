@@ -15,19 +15,13 @@
  *
  */
 
-package org.rdfarchitect.config;
+package org.rdfarchitect.api.controller;
 
-import org.rdfarchitect.database.DatabasePort;
-import org.rdfarchitect.services.shacl.SHACLGenerateService;
-import org.rdfarchitect.services.shacl.SHACLGenerateUseCase;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import lombok.experimental.UtilityClass;
 
-@Configuration
-public class SHACLGenerateConfig {
+@UtilityClass
+public class Response {
 
-    @Bean
-    public SHACLGenerateUseCase shaclGenerateUseCase(DatabasePort databasePort) {
-        return new SHACLGenerateService(databasePort);
-    }
+    public final String SUCCESS = "success";
+
 }

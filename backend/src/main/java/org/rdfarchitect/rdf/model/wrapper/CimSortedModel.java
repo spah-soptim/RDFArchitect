@@ -116,7 +116,7 @@ public class CimSortedModel implements Model {
 
     @Override
     public Model write(OutputStream out, String lang, String base) {
-        var rdfLang = RDFLanguages.nameToLang(lang);
+        var rdfLang = lang != null ? RDFLanguages.nameToLang(lang) : Lang.RDFXML;
         if (rdfLang == null) {
             throw new IllegalArgumentException("Unsupported language: " + lang);
         }
@@ -326,7 +326,7 @@ public class CimSortedModel implements Model {
                   .collect(Collectors.toMap(
                             Map.Entry::getKey,
                             Map.Entry::getValue,
-                            (e1, e2) -> e1,
+                            (e1, _) -> e1,
                             java.util.LinkedHashMap::new
                                            ));
     }

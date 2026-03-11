@@ -20,6 +20,7 @@ package org.rdfarchitect.api.controller.datasets.graphs.packages;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
+import org.rdfarchitect.api.controller.Response;
 import org.rdfarchitect.api.dto.packages.PackageDTO;
 import org.rdfarchitect.database.GraphIdentifier;
 import org.rdfarchitect.services.ExpandURIUseCase;
@@ -28,6 +29,7 @@ import org.rdfarchitect.services.update.packages.DeletePackageUseCase;
 import org.rdfarchitect.services.update.packages.ReplacePackageUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -57,7 +59,7 @@ public class PackageRESTController {
     @PutMapping
     public String replacePackage(
               @Parameter(description = "The name/url of the inquirer.")
-              @RequestHeader(value = "origin", required = false, defaultValue = "unknown")
+              @RequestHeader(value = HttpHeaders.ORIGIN, required = false, defaultValue = "unknown")
               String originURL,
               @Parameter(description = "The literal name of the dataset.")
               @PathVariable
@@ -81,7 +83,7 @@ public class PackageRESTController {
         replacePackageUseCase.replacePackage(graphIdentifier, packageDTO);
 
         logger.info("Sending response to PUT request: \"/api/datasets/{{}}/graphs/{{}}/packages/{{}}\" from \"{}\".", datasetName, graphURI, originURL, packageUUID);
-        return "success";
+        return Response.SUCCESS;
     }
 
     @Operation(
@@ -92,7 +94,7 @@ public class PackageRESTController {
     @DeleteMapping
     public String deletePackage(
               @Parameter(description = "The name/url of the inquirer.")
-              @RequestHeader(value = "origin", required = false, defaultValue = "unknown")
+              @RequestHeader(value = HttpHeaders.ORIGIN, required = false, defaultValue = "unknown")
               String originURL,
               @Parameter(description = "The literal name of the dataset.")
               @PathVariable
@@ -112,6 +114,6 @@ public class PackageRESTController {
         deletePackageUseCase.deletePackage(graphIdentifier, packageUUID);
 
         logger.info("Sending response to DELETE request: \"/api/datasets/{{}}/graphs/{{}}/packages/{{}}\" from \"{}\".", datasetName, graphURI, packageUUID, originURL);
-        return "success";
+        return Response.SUCCESS;
     }
 }
