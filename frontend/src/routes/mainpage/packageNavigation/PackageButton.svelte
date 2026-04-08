@@ -38,7 +38,7 @@
     import { isSelectedPackage } from "./packageNavigationUtils.svelte.js";
     import NewClassDialog from "../../NewClassDialog.svelte";
     import PackageEditorDialog from "../packageEditorDialog.svelte";
-    import AddToDiagramDialog from "./custom-diagram-dialog/AddToDiagramDialog.svelte";
+    import AddToDiagramDialog from "./custom-diagram-dialogs/AddToDiagramDialog.svelte";
 
     let {
         datasetNavEntry,

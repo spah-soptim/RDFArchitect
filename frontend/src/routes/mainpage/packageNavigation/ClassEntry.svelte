@@ -31,8 +31,8 @@
 
     import { isSelectedClass } from "./packageNavigationUtils.svelte.js";
     import DeleteClassConfirmDialog from "../../DeleteClassConfirmDialog.svelte";
-    import AddToDiagramDialog from "./custom-diagram-dialog/AddToDiagramDialog.svelte";
-    import RemoveFromDiagramDialog from "./custom-diagram-dialog/RemoveFromDiagramDialog.svelte";
+    import AddToDiagramDialog from "./custom-diagram-dialogs/AddToDiagramDialog.svelte";
+    import RemoveFromDiagramDialog from "./custom-diagram-dialogs/RemoveFromDiagramDialog.svelte";
     import SHACLClassSpecificPopUp from "../../shacl/shaclclassspecific/SHACLClassSpecificPopUp.svelte";
 
     let {
