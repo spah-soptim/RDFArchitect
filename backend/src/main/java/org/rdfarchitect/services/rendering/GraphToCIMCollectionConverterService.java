@@ -310,20 +310,38 @@ public class GraphToCIMCollectionConverterService implements GraphToCIMCollectio
 
     //enums
     private void fetchEnums(Graph graph, GraphIdentifier graphIdentifier, GraphFilter filter, CIMCollection cimCollection) {
+        if (filter.getAllowedUUIDs() != null && !filter.getAllowedUUIDs().isEmpty()) {
+            fetchSpecifiedEnums(graph, graphIdentifier, filter, cimCollection);
+        } else {
+            fetchEnumsInPackage(graph, graphIdentifier, filter, cimCollection);
+        }
+    }
+
+    private void fetchSpecifiedEnums(Graph graph, GraphIdentifier graphIdentifier, GraphFilter filter, CIMCollection cimCollection) {
+        var enumQueryBuilder = CIMQueries.getSpecifiedEnumClassesQuery(
+                  databasePort.getPrefixMapping(graphIdentifier.getDatasetName()),
+                  graphIdentifier.getGraphUri(),
+                  filter.getAllowedUUIDs());
+        collectEnums(graph, graphIdentifier, filter, cimCollection, enumQueryBuilder);
+    }
+
+    private void fetchEnumsInPackage(Graph graph, GraphIdentifier graphIdentifier, GraphFilter filter, CIMCollection cimCollection) {
         var enumsInPackageQueryBuilder = CIMQueries.getEnumClassesQuery(
                   databasePort.getPrefixMapping(graphIdentifier.getDatasetName()),
                   graphIdentifier.getGraphUri(),
                   null);
         appendPackageConstraint(filter, enumsInPackageQueryBuilder, CIMQueryVars.URI, true);
+        collectEnums(graph, graphIdentifier, filter, cimCollection, enumsInPackageQueryBuilder);
+    }
+
+    private void collectEnums(Graph graph, GraphIdentifier graphIdentifier, GraphFilter filter, CIMCollection cimCollection, SelectBuilder queryBuilder) {
         var enumList = new CIMObjectFetcher(
                   graph,
                   graphIdentifier.getGraphUri(),
                   databasePort.getPrefixMapping(graphIdentifier.getDatasetName())
-        ).fetchCIMClassList(enumsInPackageQueryBuilder.build());
-        enumList.forEach(
-                  cimEnum -> cimCollection.getEnums().add(cimEnum)
-                        );
-        //fetch enum entries
+        ).fetchCIMClassList(queryBuilder.build());
+        enumList.forEach(cimEnum -> cimCollection.getEnums().add(cimEnum));
+
         var enumUUIDList = new ArrayList<String>();
         enumList.forEach(cimEnum -> enumUUIDList.add(cimEnum.getUuid().toString()));
         fetchEnumEntries(graph, graphIdentifier, filter, cimCollection, enumUUIDList);

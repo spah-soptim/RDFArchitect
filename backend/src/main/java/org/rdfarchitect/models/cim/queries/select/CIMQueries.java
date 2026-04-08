@@ -89,7 +89,6 @@ public class CIMQueries {
                   .buildSelectBuilder();
     }
 
-
     /**
      * Get a {@link SelectBuilder} for a query that retrieves the class with the given UUID.
      *
@@ -256,13 +255,7 @@ public class CIMQueries {
      * @return A {@link SelectBuilder} for the query.
      */
     public static SelectBuilder getEnumClassesQuery(PrefixMapping prefixMapping, String graphURI, String enumUUID) {
-        var baseQuery = new CIMBaseQueryBuilder()
-                  .addPrefixes(prefixMapping)
-                  .setGraph(graphURI)
-                  .setOrder()
-                  .setType(RDFS.Class)
-                  .filterStereotypes(CIMStereotypes.enumeration.getURI())
-                  .build();
+        var baseQuery = getBaseEnumQuery(prefixMapping, graphURI);
         var builder = new CIMQueryBuilder(baseQuery, enumUUID);
 
         return builder
@@ -272,6 +265,38 @@ public class CIMQueries {
                   .appendPackageQuery(OPTIONAL)
                   .appendSuperClassQuery(OPTIONAL)
                   .buildSelectBuilder();
+    }
+
+    /**
+     * Get a {@link SelectBuilder} for a query that retrieves the specified enum classes of a graph.
+     *
+     * @param prefixMapping The {@link PrefixMapping} to use for the query.
+     * @param graphURI      The URI of the graph to query.
+     * @param enumUUIDs     The UUIDs of the enum classes to retrieve
+     *
+     * @return A {@link SelectBuilder} for the query.
+     */
+    public static SelectBuilder getSpecifiedEnumClassesQuery(PrefixMapping prefixMapping, String graphURI, List<String> enumUUIDs) {
+        var baseQuery = getBaseEnumQuery(prefixMapping, graphURI);
+        var builder = new CIMQueryBuilder(baseQuery, enumUUIDs);
+
+        return builder
+                  .appendUUIDQuery(REQUIRED)
+                  .appendLabelQuery(REQUIRED)
+                  .appendCommentQuery(OPTIONAL)
+                  .appendPackageQuery(OPTIONAL)
+                  .appendSuperClassQuery(OPTIONAL)
+                  .buildSelectBuilder();
+    }
+
+    private static SelectBuilder getBaseEnumQuery(PrefixMapping prefixMapping, String graphURI) {
+        return new CIMBaseQueryBuilder()
+                  .addPrefixes(prefixMapping)
+                  .setGraph(graphURI)
+                  .setOrder()
+                  .setType(RDFS.Class)
+                  .filterStereotypes(CIMStereotypes.enumeration.getURI())
+                  .build();
     }
 
     public static SelectBuilder getEnumEntriesQuery(PrefixMapping prefixMapping, String graphURI, String enumUUID) {
