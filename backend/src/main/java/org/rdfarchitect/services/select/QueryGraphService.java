@@ -31,7 +31,7 @@ import org.rdfarchitect.api.dto.packages.PackageDTO;
 import org.rdfarchitect.api.dto.packages.PackageMapper;
 import org.rdfarchitect.database.DatabasePort;
 import org.rdfarchitect.database.GraphIdentifier;
-import org.rdfarchitect.database.inmemory.InMemorySparqlExecutioner;
+import org.rdfarchitect.database.inmemory.InMemorySparqlExecutor;
 import org.rdfarchitect.exception.database.DataAccessException;
 import org.rdfarchitect.models.cim.CIMQuerySolutionParser;
 import org.rdfarchitect.models.cim.data.CIMObjectFactory;

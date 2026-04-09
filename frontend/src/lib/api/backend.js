@@ -391,6 +391,21 @@ export class BackendConnection {
         });
     }
 
+    async updateGlobalClassPositions(
+        datasetName,
+        packageUUID,
+        classPositionDTOList,
+    ) {
+        let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/layout/${encodeURIComponent(packageUUID)}/classes`;
+        return await fetch(url, {
+            method: "PUT",
+            headers: new Headers({ "Content-Type": "application/json" }),
+            mode: "cors",
+            body: JSON.stringify(classPositionDTOList),
+            credentials: "include",
+        });
+    }
+
     async getKnownOntologyFields() {
         let url = `${PUBLIC_BACKEND_URL}/ontology-fields`;
         return await fetch(url, {
@@ -473,8 +488,18 @@ export class BackendConnection {
         });
     }
 
-    async getCustomDiagramRenderingData(datasetName, graphURI, diagramId) {
+    async getCustomGraphDiagramRenderingData(datasetName, graphURI, diagramId) {
         let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/graphs/${encodeURIComponent(graphURI)}/diagrams/${encodeURIComponent(diagramId)}`;
+        return await fetch(url, {
+            method: "GET",
+            mode: "cors",
+            headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: "include",
+        });
+    }
+
+    async getCustomDatasetDiagramRenderingData(datasetName, diagramId) {
+        let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/diagrams/${encodeURIComponent(diagramId)}`;
         return await fetch(url, {
             method: "GET",
             mode: "cors",
@@ -527,7 +552,12 @@ export class BackendConnection {
         });
     }
 
-    async removeFromCustomGraphDiagram(datasetName, graphURI, diagramId, classId) {
+    async removeFromCustomGraphDiagram(
+        datasetName,
+        graphURI,
+        diagramId,
+        classId,
+    ) {
         let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/graphs/${encodeURIComponent(graphURI)}/diagrams/${encodeURIComponent(diagramId)}/classes/${encodeURIComponent(classId)}`;
         return await fetch(url, {
             method: "DELETE",
@@ -548,7 +578,7 @@ export class BackendConnection {
     }
 
     async getFullClassesForDiagram(datasetName, graphURI, diagramId) {
-        let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/graphs/${encodeURIComponent(graphURI)}/diagrams/${encodeURIComponent(diagramId)}/classes}`;
+        let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/graphs/${encodeURIComponent(graphURI)}/diagrams/${encodeURIComponent(diagramId)}/classes`;
         return await fetch(url, {
             method: "GET",
             mode: "cors",
@@ -558,7 +588,7 @@ export class BackendConnection {
     }
 
     async getFullClassesForDatasetDiagram(datasetName, diagramId) {
-        let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/diagrams/${encodeURIComponent(diagramId)}/classes}`;
+        let url = `${PUBLIC_BACKEND_URL}/datasets/${encodeURIComponent(datasetName)}/diagrams/${encodeURIComponent(diagramId)}/classes`;
         return await fetch(url, {
             method: "GET",
             mode: "cors",

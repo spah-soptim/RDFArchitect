@@ -31,10 +31,10 @@
 
     import { isSelectedClass } from "./packageNavigationUtils.svelte.js";
     import DeleteClassConfirmDialog from "../../DeleteClassConfirmDialog.svelte";
+    import AddToDatasetDiagramDialog from "./custom-diagram-dialogs/AddToDatasetDiagramDialog.svelte";
     import AddToGraphDiagramDialog from "./custom-diagram-dialogs/AddToGraphDiagramDialog.svelte";
     import RemoveFromDiagramDialog from "./custom-diagram-dialogs/RemoveFromDiagramDialog.svelte";
     import SHACLClassSpecificPopUp from "../../shacl/shaclclassspecific/SHACLClassSpecificPopUp.svelte";
-    import AddToDatasetDiagramDialog from "./custom-diagram-dialogs/AddToDatasetDiagramDialog.svelte";
 
     let {
         datasetNavEntry,
