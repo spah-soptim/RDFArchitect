@@ -151,11 +151,7 @@
         const classDto = await (
             await bec.getClassInfo(datasetName, graphUri, classUuid)
         ).json();
-        const newReactiveClass = mapClassDtoToReactiveClass(
-            classDto,
-            context.classes,
-            uuid => context.targetClassInfos.find(cls => cls.uuid === uuid),
-        );
+        const newReactiveClass = mapClassDtoToReactiveClass(classDto, context.classes, (uuid) => context.classes.find(cls => cls.uuid === uuid));
         reactiveClass = adoptUnsavedClassChanges(
             newReactiveClass,
             reactiveClass,

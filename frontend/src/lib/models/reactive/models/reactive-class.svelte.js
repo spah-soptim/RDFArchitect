@@ -27,7 +27,7 @@ import {
     isInvalidLabel,
     isInvalidNamespace,
     isInvalidStereotype,
-    isInvalidUuid,
+    isInvalidUuid
 } from "$lib/models/reactive/validity-rules/validityFunctions.js";
 
 function initializeStereotypeViolationChecks(stereotype, stereotypesArray) {
@@ -36,21 +36,20 @@ function initializeStereotypeViolationChecks(stereotype, stereotypesArray) {
     );
 }
 
-function initializeAssociationViolationChecks(
-    association,
-    associationsArray,
-    getClassByUuid,
-) {
+function initializeAssociationViolationChecks(association, associationsArray, getClassByUuid) {
     association.label.violationChecks.push(() =>
-        isInvalidAssociationLabel(association, associationsArray),
+        isInvalidAssociationLabel(
+            association,
+            associationsArray,
+        )
     );
     association.inverse.label.violationChecks.push(() =>
         isInvalidInverseAssociationLabel(
             association,
             associationsArray,
             getClassByUuid,
-        ),
-    );
+        )
+    )
 }
 
 function initializeUniqueLabelChecks(reactiveObject, enumEntriesArray) {
