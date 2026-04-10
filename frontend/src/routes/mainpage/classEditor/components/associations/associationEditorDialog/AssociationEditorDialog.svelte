@@ -43,6 +43,7 @@
                     namespace: classEditorContext.reactiveClass.namespace.value,
                 },
             });
+            associations.appendClass(association);
         } else {
             isNewAssociation = false;
         }
@@ -68,16 +69,23 @@
         association.uuid.value = result.associationUUIDs.fromUUID;
         association.inverse.uuid.value = result.associationUUIDs.toUUID;
         if (isNewAssociation) {
-            associations.append(association);
             isNewAssociation = false;
         }
         association.save();
     }
+
+    function onClose() {
+        if (isNewAssociation) {
+            associations.remove(association);
+        }
+    }
+
 </script>
 
 <ModifyDataDialog
     bind:showDialog
     {onOpen}
+    {onClose}
     saveChanges={saveAssociation}
     discardChanges={() => association.reset()}
     hasChanges={isNewAssociation || association?.isModified}

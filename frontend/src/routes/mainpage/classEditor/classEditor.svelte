@@ -150,7 +150,7 @@
         const classDto = await (
             await bec.getClassInfo(datasetName, graphUri, classUuid)
         ).json();
-        reactiveClass = mapClassDtoToReactiveClass(classDto, context.classes);
+        reactiveClass = mapClassDtoToReactiveClass(classDto, context.classes, (uuid) => context.classes.find(cls => cls.uuid === uuid));
         loadingClass = false;
         console.log({ reactiveClass });
     }

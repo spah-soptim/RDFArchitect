@@ -21,11 +21,11 @@ import { ReactiveEnumEntry } from "$lib/models/reactive/reactive-enum-entry.svel
 import { ReactiveObjectsArrayWrapper } from "$lib/models/reactive/reactive-wrappers/reactive-objects-array-wrapper.svelte.js";
 import { ReactiveValueWrapper } from "$lib/models/reactive/reactive-wrappers/reactive-value-wrapper.svelte.js";
 import {
-    hasUniqueLabel,
+    hasUniqueLabel, isInvalidAssociationLabel, isInvalidInverseAssociationLabel,
     isInvalidLabel,
     isInvalidNamespace,
     isInvalidStereotype,
-    isInvalidUuid,
+    isInvalidUuid
 } from "$lib/models/reactive/validity-rules/validityFunctions.js";
 
 function initializeStereotypeViolationChecks(stereotype, stereotypesArray) {
@@ -33,6 +33,23 @@ function initializeStereotypeViolationChecks(stereotype, stereotypesArray) {
         isInvalidStereotype(stereotype, stereotypesArray),
     );
 }
+
+function initializeAssociationViolationChecks(association, associationsArray, getClassByUuid) {
+    association.label.violationChecks.push(() =>
+        isInvalidAssociationLabel(
+            association,
+            associationsArray,
+        )
+    );
+    association.inverse.label.violationChecks.push(() =>
+        isInvalidInverseAssociationLabel(
+            association,
+            associationsArray,
+            getClassByUuid,
+        )
+    )
+}
+
 function initializeUniqueLabelChecks(reactiveObject, enumEntriesArray) {
     reactiveObject.label.violationChecks.push(label =>
         hasUniqueLabel(label, enumEntriesArray),
@@ -51,6 +68,7 @@ export class ReactiveClass {
         attributes = [],
         associations = [],
         enumEntries = [],
+        getClassByUuid = () => undefined,
     ) {
         this.uuid = new ReactiveValueWrapper(uuid, isInvalidUuid);
         this.namespace = new ReactiveValueWrapper(
@@ -74,7 +92,7 @@ export class ReactiveClass {
         this.associations = new ReactiveObjectsArrayWrapper(
             associations,
             ReactiveAssociation,
-            initializeUniqueLabelChecks,
+            (association, associationsArray) => initializeAssociationViolationChecks(association, associationsArray, getClassByUuid),
         );
         this.enumEntries = new ReactiveObjectsArrayWrapper(
             enumEntries,
