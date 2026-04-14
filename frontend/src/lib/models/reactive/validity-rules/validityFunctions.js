@@ -18,7 +18,6 @@ import { validate as uuidValidate } from "uuid";
 import { IriValidationStrategy, validateIri } from "validate-iri";
 
 import { getNCNameViolations } from "$lib/rdf-syntax-grammar/namespace/prefix/index.js";
-import { getContext } from "svelte";
 
 export function isInvalidUuid(uuid) {
     const violations = [];
