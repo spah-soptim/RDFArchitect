@@ -77,11 +77,6 @@
         }
     }
 
-    function onClose() {
-        association = null;
-        isNewAssociation = true;
-    }
-
     async function saveAssociation() {
         const apiAssociation = mapReactiveAssociationToAssociationDto(
             association,
