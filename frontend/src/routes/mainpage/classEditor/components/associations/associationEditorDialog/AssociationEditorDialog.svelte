@@ -18,6 +18,8 @@
 <script>
     import { getContext } from "svelte";
 
+    import { BackendConnection } from "$lib/api/backend.js";
+    import { PUBLIC_BACKEND_URL } from "$lib/config/runtime.js";
     import ModifyDataDialog from "$lib/dialog/ModifyDataDialog.svelte";
     import { mapReactiveAssociationToAssociationDto } from "$lib/models/reactive/mapper/map-reactive-object-to-dto.js";
     import { ReactiveAssociation } from "$lib/models/reactive/reactive-association.svelte.js";
@@ -28,9 +30,34 @@
 
     let { showDialog = $bindable(), associations, association } = $props();
 
+    const bec = new BackendConnection(fetch, PUBLIC_BACKEND_URL);
+
     let classEditorContext = $state();
     let isNewAssociation = $state(true);
     let readonly = $derived(classEditorContext?.readonly);
+
+    $effect(async () => {
+        const targetValue = association?.target?.value;
+        const ctx = classEditorContext;
+
+        if (!ctx || !targetValue) return;
+
+        const existingClassInfo = ctx.getTargetClassInfoByUuid(targetValue);
+        if (!existingClassInfo) {
+            const res = await bec.getClassInfo(
+                ctx.datasetName,
+                ctx.graphUri,
+                targetValue,
+            );
+            const classInfo = await res.json();
+            ctx.addTargetClassInfo(classInfo);
+        }
+
+        // Trigger violation checks
+        if (association?.inverse?.label) {
+            association.inverse.label.value = association.inverse.label.value;
+        }
+    });
 
     function onOpen() {
         classEditorContext = getContext("classEditor");
@@ -78,8 +105,8 @@
         if (isNewAssociation) {
             associations.remove(association);
         }
+        association = null;
     }
-
 </script>
 
 <ModifyDataDialog

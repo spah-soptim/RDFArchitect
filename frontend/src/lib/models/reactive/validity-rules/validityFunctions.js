@@ -18,7 +18,6 @@ import { validate as uuidValidate } from "uuid";
 import { IriValidationStrategy, validateIri } from "validate-iri";
 
 import { getNCNameViolations } from "$lib/rdf-syntax-grammar/namespace/prefix/index.js";
-import { getContext } from "svelte";
 
 export function isInvalidUuid(uuid) {
     const violations = [];
@@ -39,29 +38,63 @@ export function isInvalidLabel(label) {
 
 export function isInvalidAssociationLabel(association, associations) {
     const violations = [];
-    const assocList = Array.isArray(associations) ? associations : associations?.values ?? [];
-    if (assocList.filter(a => a.label.value === association?.label?.value && a.namespace.value === association.namespace?.value && a.uuid.value !== association?.uuid?.value).length > 0) {
+    const assocList = Array.isArray(associations)
+        ? associations
+        : (associations?.values ?? []);
+    if (
+        assocList.filter(
+            a =>
+                a.label.value === association?.label?.value &&
+                a.namespace.value === association.namespace?.value &&
+                a.uuid.value !== association?.uuid?.value,
+        ).length > 0
+    ) {
         violations.push("must be unique");
-    } else if (association && association.domain && association.target && association.inverse && association.label) {
-        if (association.domain?.value === association.target?.value && association.inverse?.label?.value === association.label?.value) {
+    } else if (
+        association &&
+        association.domain &&
+        association.target &&
+        association.inverse &&
+        association.label
+    ) {
+        if (
+            association.domain?.value === association.target?.value &&
+            association.inverse?.label?.value === association.label?.value
+        ) {
             violations.push("must be unique");
         }
     }
     return violations;
 }
 
-export function isInvalidInverseAssociationLabel(association, associations, getClassByUuid) {
+export function isInvalidInverseAssociationLabel(
+    association,
+    associations,
+    getClassByUuid,
+) {
     const violations = [];
     const targetClassDto = getClassByUuid(association.target?.value);
-    console.log({ targetClassDto });
-    const assocList = targetClassDto?.associationPairs?.map(pair => pair.to) ?? [];
-    console.log({ assocList });
-    if (assocList.filter(a => a.label === association?.inverse?.label?.value &&
-        a.prefix === association.inverse?.namespace?.value &&
-        a.uuid !== association.inverse?.uuid?.value).length > 0) {
+    const assocList = targetClassDto?.associationPairs?.map(pair => pair) ?? [];
+    if (
+        assocList.filter(
+            a =>
+                a.from.label === association?.inverse?.label?.value &&
+                a.from.prefix === association.inverse?.namespace?.value &&
+                a.from.uuid !== association.inverse?.uuid?.value,
+        ).length > 0
+    ) {
         violations.push("must be unique");
-    } else if (association && association.domain && association.target && association.inverse && association.label) {
-        if (association.domain?.value === association.target?.value && association.inverse?.label?.value === association.label?.value) {
+    } else if (
+        association &&
+        association.domain &&
+        association.target &&
+        association.inverse &&
+        association.label
+    ) {
+        if (
+            association.domain?.value === association.target?.value &&
+            association.inverse?.label?.value === association.label?.value
+        ) {
             violations.push("must be unique");
         }
     }

@@ -59,6 +59,7 @@
         datatypes: [],
         packages: [],
         classes: [],
+        targetClassInfos: [],
     };
 
     let isDatasetReadOnly = $state(false);
@@ -150,9 +151,28 @@
         const classDto = await (
             await bec.getClassInfo(datasetName, graphUri, classUuid)
         ).json();
-        reactiveClass = mapClassDtoToReactiveClass(classDto, context.classes, (uuid) => context.classes.find(cls => cls.uuid === uuid));
+        reactiveClass = mapClassDtoToReactiveClass(
+            classDto,
+            context.classes,
+            uuid => context.targetClassInfos.find(cls => cls.uuid === uuid),
+        );
         loadingClass = false;
         console.log({ reactiveClass });
+
+        const targetUuids = [
+            ...new Set(
+                reactiveClass.associations.values
+                    .map(assoc => assoc.target.value)
+                    .filter(uuid => uuid != null),
+            ),
+        ];
+
+        context.targetClassInfos = await Promise.all(
+            targetUuids.map(async uuid => {
+                const res = await bec.getClassInfo(datasetName, graphUri, uuid);
+                return res.json();
+            }),
+        );
     }
 
     function openPropertySHACLRulesDialog(property) {
@@ -188,10 +208,18 @@
         get reactiveClass() {
             return reactiveClass;
         },
+        get targetClassInfos() {
+            return context.targetClassInfos;
+        },
         // get Objects by identifier functions
         get getClassByUuid() {
             return function (uuid) {
                 return context.classes.find(cls => cls.uuid === uuid);
+            };
+        },
+        get getTargetClassInfoByUuid() {
+            return function (uuid) {
+                return context.targetClassInfos.find(cls => cls.uuid === uuid);
             };
         },
         get getSubstitutedNamespace() {
@@ -219,6 +247,9 @@
             return function (uuid) {
                 return context.packages.find(pkg => pkg.uuid === uuid);
             };
+        },
+        addTargetClassInfo(classInfo) {
+            context.targetClassInfos = [...context.targetClassInfos, classInfo];
         },
     });
 </script>
