@@ -16,7 +16,6 @@
  */
 import { ReactiveValueWrapper } from "$lib/models/reactive/reactive-wrappers/reactive-value-wrapper.svelte.js";
 import {
-    isInvalidLabel,
     isInvalidMultiplicityLowerBound,
     isInvalidMultiplicityUpperBound,
     isInvalidNamespace,
