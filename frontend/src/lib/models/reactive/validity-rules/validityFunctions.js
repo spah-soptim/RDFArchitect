@@ -29,9 +29,23 @@ export function isInvalidUuid(uuid) {
 }
 
 export function isInvalidLabel(label) {
+    return isNotEmptyValidation(label);
+}
+
+export function isInvalidClassLabel(label, namespace, compareClasses) {
     const violations = [];
     if (!label || label.trim() === "") {
         violations.push("must not be empty");
+    }
+    if (typeof namespace === "string" && namespace.trim() !== "") {
+        if (
+            compareClasses &&
+            compareClasses.filter(
+                c => c.label === label && c.prefix === namespace,
+            ).length > 0
+        ) {
+            violations.push("must be unique");
+        }
     }
     return violations;
 }
@@ -106,11 +120,7 @@ export function isInvalidInverseAssociationLabel(
 }
 
 export function isInvalidNamespace(namespace) {
-    const violations = [];
-    if (!namespace || namespace.trim() === "") {
-        violations.push("must not be empty");
-    }
-    return violations;
+    return isNotEmptyValidation(namespace);
 }
 
 export function isInvalidMultiplicityLowerBound(lowerBound, upperBound) {
@@ -146,11 +156,7 @@ export function isInvalidMultiplicityUpperBound(upperBound, lowerBound) {
 }
 
 export function isInvalidDatatypeUri(uri) {
-    const violations = [];
-    if (!uri || uri === "") {
-        violations.push("must not be empty");
-    }
-    return violations;
+    return isNotEmptyValidation(uri);
 }
 
 export function isInvalidTarget(target) {
@@ -172,9 +178,9 @@ export function isInvalidStereotype(stereotype, existingStereotypes) {
     return violations;
 }
 
-export function isNotEmptyValidation(uri) {
+export function isNotEmptyValidation(value) {
     const violations = [];
-    if (!uri || uri.trim() === "") {
+    if (!value || value.trim() === "") {
         violations.push("must not be empty");
     }
     return violations;
@@ -186,6 +192,21 @@ export function hasUniqueLabel(label, reactiveObjectsArray) {
         reactiveObjectsArray.filter(obj => obj.label.value === label).length > 1
     ) {
         violations.push("must be unique");
+    }
+    return violations;
+}
+
+export function hasUniqueIRI(label, namespace, compareArray) {
+    const violations = [];
+    if (typeof namespace === "string" && namespace.trim() !== "") {
+        if (
+            compareArray &&
+            compareArray.filter(
+                c => c.label.value === label && c.namespace.value === namespace,
+            ).length > 1
+        ) {
+            violations.push("must be unique");
+        }
     }
     return violations;
 }
@@ -203,6 +224,26 @@ export function isInvalidNamespaceIri(iri) {
 
     if (!iri?.endsWith("#") && !iri?.endsWith("/")) {
         violations.push('must end with "#" or "/"');
+    }
+    return violations;
+}
+
+export function isInvalidIri(iri) {
+    const violations = isNotEmptyValidation(iri);
+    if (validateIri(iri, IriValidationStrategy.Pragmatic)) {
+        violations.push("must be a valid IRI");
+    }
+    return violations;
+}
+
+export function isInvalidOntologyValue(value, isIri) {
+    const violations = isNotEmptyValidation(value);
+    if (
+        violations.length === 0 &&
+        isIri &&
+        validateIri(value, IriValidationStrategy.Pragmatic)
+    ) {
+        violations.push("must be a valid IRI");
     }
     return violations;
 }

@@ -46,14 +46,18 @@
             attribute = new ReactiveAttribute({
                 namespace: classEditorContext.reactiveClass.namespace.value,
             });
+            attributes.appendClass(attribute);
         } else {
             isNewAttribute = false;
         }
     }
 
     function onClose() {
-        attribute = null;
+        if (isNewAttribute) {
+            attributes.remove(attribute);
+        }
         isNewAttribute = true;
+        attribute = null;
     }
 
     function getDatatypeLabelByUri(uri) {
@@ -85,7 +89,6 @@
         attribute.uuid.value = result.attributeUUID;
         attribute.save();
         if (isNewAttribute) {
-            attributes.append(attribute);
             isNewAttribute = false;
         }
         forceReloadTrigger.trigger();

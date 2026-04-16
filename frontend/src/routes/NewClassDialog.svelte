@@ -16,6 +16,7 @@
   -->
 
 <script>
+    import { untrack } from "svelte";
     import { v4 as uuidv4 } from "uuid";
 
     import { getNamespaces } from "$lib/api/apiDatasetUtils.js";
@@ -23,19 +24,24 @@
     import DatasetAndGraphSelection from "$lib/components/DatasetAndGraphSelection.svelte";
     import SelectEditControl from "$lib/components/SelectEditControl.svelte";
     import TextEditControl from "$lib/components/TextEditControl.svelte";
+    import ViolationMessages from "$lib/components/ViolationMessages.svelte";
     import { PUBLIC_BACKEND_URL } from "$lib/config/runtime";
     import ActionDialog from "$lib/dialog/ActionDialog.svelte";
+    import { ReactiveValueWrapper } from "$lib/models/reactive/reactive-wrappers/reactive-value-wrapper.svelte.js";
+    import { isInvalidClassLabel } from "$lib/models/reactive/validity-rules/validityFunctions.js";
 
     import {
         editorState,
         forceReloadTrigger,
     } from "../lib/sharedState.svelte.js";
+    import { getClasses } from "./mainpage/classEditor/fetch-class-editor-context.js";
 
     let {
         showDialog = $bindable(),
         lockedDatasetName,
         lockedGraphUri,
         lockedPackage,
+        onClassCreated = () => {},
     } = $props();
 
     const uuid = uuidv4();
@@ -53,24 +59,29 @@
 
     let classPackage = $state(null);
     let classURINamespace = $state(null);
-    let className = $state(null);
 
+    let className = $state(null);
     let packages = $state([]);
     let namespaces = $state([]);
+
+    let compareClasses = $state([]);
 
     let disableSubmit = $derived(
         !datasetName ||
             !graphURI ||
             !classPackage ||
-            !classURINamespace ||
-            !className,
+            !classURINamespace?.value ||
+            !className?.value ||
+            (className?.violations.length ?? 0) > 0,
     );
 
     const packageSelectionLocked = $derived(!!lockedPackage);
 
     $effect(async () => {
         namespaces = await getNamespaces(datasetName);
-        classURINamespace = null;
+        if (classURINamespace) {
+            classURINamespace.value = null;
+        }
         if (!packageSelectionLocked) {
             packages = datasetName ? packages : [];
             classPackage = null;
@@ -85,13 +96,38 @@
         classPackage = null;
     });
 
+    $effect(async () => {
+        if (datasetName && graphURI) {
+            compareClasses = await getClasses(datasetName, graphURI);
+        } else {
+            compareClasses = [];
+        }
+        if (!className || !classURINamespace) {
+            return;
+        }
+        untrack(
+            () =>
+                (className = new ReactiveValueWrapper(className.value, label =>
+                    isInvalidClassLabel(
+                        label,
+                        classURINamespace.value,
+                        compareClasses,
+                    ),
+                )),
+        );
+    });
+
     async function onOpen() {
         datasetName =
             lockedDatasetName ?? editorState.selectedDataset.getValue();
         graphURI = lockedGraphUri ?? editorState.selectedGraph.getValue();
 
-        classURINamespace = null;
-        className = null;
+        classURINamespace = new ReactiveValueWrapper(null);
+
+        className = new ReactiveValueWrapper("", label =>
+            isInvalidClassLabel(label, classURINamespace.value, compareClasses),
+        );
+
         if (!datasetName) {
             return;
         }
@@ -104,13 +140,14 @@
 
         if (graphURI) {
             await getPackages(datasetName, graphURI);
+            compareClasses = await getClasses(datasetName, graphURI);
         } else {
             packages = [];
         }
 
         if (packageSelectionLocked) {
-            classPackage = lockedPackage;
-            packages = [lockedPackage];
+            classPackage = lockedPackage ?? null;
+            packages = lockedPackage ? [lockedPackage] : [];
             return;
         }
         await getPackages(datasetName, graphURI);
@@ -118,7 +155,8 @@
             editorState.selectedPackageUUID.getValue() === "default"
                 ? null
                 : editorState.selectedPackageUUID.getValue();
-        classPackage = packages.find(pkg => pkg.uuid === selectedPackageUUID);
+        classPackage =
+            packages.find(pkg => pkg.uuid === selectedPackageUUID) ?? null;
     }
 
     function onClose() {
@@ -151,6 +189,8 @@
     async function newClass() {
         const datasetNameLocal = datasetName;
         const graphURILocal = graphURI;
+        const classNameLocal = className;
+        const classURINamespaceLocal = classURINamespace;
         const selectedPackageUUID = classPackage?.uuid ?? "default";
         const packageDTO = classPackage?.uuid ? classPackage : null;
         let promise = fetch(
@@ -165,14 +205,20 @@
                 headers: new Headers({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                     packageDTO,
-                    classURIPrefix: classURINamespace,
-                    className: className,
+                    classURIPrefix: classURINamespaceLocal.value,
+                    className: classNameLocal.value,
                 }),
                 credentials: "include",
             },
         ).then(res => {
             if (res.ok) {
                 console.log("successfully added class");
+                onClassCreated({
+                    datasetName: datasetNameLocal,
+                    graphURI: graphURILocal,
+                    packageUUID: selectedPackageUUID,
+                    className: classNameLocal.value,
+                });
                 editorState.selectedDataset.updateValue(datasetNameLocal);
                 editorState.selectedGraph.updateValue(graphURILocal);
                 editorState.selectedPackageUUID.updateValue(
@@ -234,25 +280,30 @@
         <label for={domIds.classURINamespace} class="mt-3 mb-1 block text-sm">
             Namespace
         </label>
-        <SelectEditControl
-            id={domIds.classURINamespace}
-            bind:value={classURINamespace}
-            options={namespaces}
-            disabled={!datasetName}
-            placeholder={datasetName
-                ? "Select namespace"
-                : "Select a dataset first"}
-            getOptionValue={namespace => namespace.substitutedPrefix}
-            getOptionLabel={namespace =>
-                `${namespace.substitutedPrefix} (${namespace.prefix})`}
-        />
-        <label for={domIds.className} class="mt-3 mb-1 block text-sm">
-            Name
-        </label>
-        <TextEditControl
-            id={domIds.className}
-            placeholder="..."
-            bind:value={className}
-        />
+        {#if className}
+            <SelectEditControl
+                id={domIds.classURINamespace}
+                bind:value={classURINamespace.value}
+                options={namespaces}
+                disabled={!datasetName}
+                placeholder={datasetName
+                    ? "Select namespace"
+                    : "Select a dataset first"}
+                getOptionValue={namespace => namespace.prefix}
+                getOptionLabel={namespace =>
+                    `${namespace.substitutedPrefix} (${namespace.prefix})`}
+            />
+            <label for={domIds.className} class="mt-3 mb-1 block text-sm">
+                Name
+            </label>
+
+            <TextEditControl
+                id={domIds.className}
+                placeholder="..."
+                bind:value={className.value}
+                warn={!className.isValid}
+            />
+            <ViolationMessages violations={className.violations} />
+        {/if}
     </div>
 </ActionDialog>

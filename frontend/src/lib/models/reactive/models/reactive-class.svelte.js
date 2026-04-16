@@ -21,10 +21,12 @@ import { ReactiveEnumEntry } from "$lib/models/reactive/models/reactive-enum-ent
 import { ReactiveObjectsArrayWrapper } from "$lib/models/reactive/reactive-wrappers/reactive-objects-array-wrapper.svelte.js";
 import { ReactiveValueWrapper } from "$lib/models/reactive/reactive-wrappers/reactive-value-wrapper.svelte.js";
 import {
+    hasUniqueIRI,
     hasUniqueLabel,
     isInvalidAssociationLabel,
     isInvalidInverseAssociationLabel,
     isInvalidLabel,
+    isInvalidClassLabel,
     isInvalidNamespace,
     isInvalidStereotype,
     isInvalidUuid,
@@ -72,13 +74,18 @@ export class ReactiveClass {
         associations = [],
         enumEntries = [],
         getClassByUuid = () => undefined,
+        compareClasses = [],
     ) {
+        compareClasses = compareClasses.filter(c => c.uuid !== uuid);
         this.uuid = new ReactiveValueWrapper(uuid, isInvalidUuid);
         this.namespace = new ReactiveValueWrapper(
             namespace,
             isInvalidNamespace,
         );
-        this.label = new ReactiveValueWrapper(label, isInvalidLabel);
+        this.label = new ReactiveValueWrapper(label, label =>
+            isInvalidClassLabel(label, this.namespace.value, compareClasses),
+        );
+
         this.package = new ReactiveValueWrapper(pack);
         this.superClass = new ReactiveValueWrapper(superClass);
         this.comment = new ReactiveValueWrapper(comment);
@@ -90,7 +97,15 @@ export class ReactiveClass {
         this.attributes = new ReactiveObjectsArrayWrapper(
             attributes,
             ReactiveAttribute,
-            initializeUniqueLabelChecks,
+            (reactiveObject, entriesArray) => {
+                reactiveObject.label.violationChecks.push(label =>
+                    hasUniqueIRI(
+                        label,
+                        reactiveObject.namespace.value,
+                        entriesArray,
+                    ),
+                );
+            },
         );
         this.associations = new ReactiveObjectsArrayWrapper(
             associations,
@@ -123,7 +138,7 @@ export class ReactiveClass {
 
     /**
      * The label of the class
-     * @type {ReactiveValueWrapper<string>}
+     * @type {ReactiveValueWrapper}
      */
     label;
 

@@ -46,7 +46,6 @@
         namespaces = [],
         readonly,
     } = $props();
-
     let showNewClassDialog = $state(false);
     let showPackageEditorDialog = $state(false);
     let showDeletePackageDialog = $state(false);
@@ -187,7 +186,9 @@
     bind:showDialog={showNewClassDialog}
     lockedDatasetName={datasetNavEntry.id}
     lockedGraphUri={graphNavEntry.id}
-    lockedPackage={packageNavEntry.data}
+    lockedPackage={packageNavEntry.data?.uuid === "default"
+        ? null
+        : packageNavEntry.data}
 />
 
 <PackageEditorDialog
