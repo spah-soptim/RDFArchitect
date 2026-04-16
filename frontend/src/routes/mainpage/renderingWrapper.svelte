@@ -95,16 +95,16 @@
         let graphFilter = {
             packageUUID: packageUUID,
             includeEnumEntries:
-            graphViewState.filter.getValue().includeEnumEntries,
+                graphViewState.filter.getValue().includeEnumEntries,
             includeAttributes:
-            graphViewState.filter.getValue().includeAttributes,
+                graphViewState.filter.getValue().includeAttributes,
             includeAssociations:
-            graphViewState.filter.getValue().includeAssociations,
+                graphViewState.filter.getValue().includeAssociations,
             includeInheritance:
-            graphViewState.filter.getValue().includeInheritance,
+                graphViewState.filter.getValue().includeInheritance,
             includeRelationsToExternalPackages:
-            graphViewState.filter.getValue()
-                .includeRelationsToExternalPackages,
+                graphViewState.filter.getValue()
+                    .includeRelationsToExternalPackages,
         };
 
         try {

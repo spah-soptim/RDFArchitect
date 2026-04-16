@@ -37,7 +37,8 @@ public class GraphWithContext {
     @Getter
     private final ConcurrentHashMap<UUID, CustomDiagram> customDiagrams = new ConcurrentHashMap<>();
     @Getter
-    private final DiagramLayout diagramLayout = new DiagramLayout();
+    @Setter
+    private DiagramLayout diagramLayout = new DiagramLayout();
 
     public GraphWithContext(GraphRewindableWithUUIDs rdfGraph) {
         this.rdfGraph = rdfGraph;

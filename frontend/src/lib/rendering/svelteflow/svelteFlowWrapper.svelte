@@ -301,7 +301,7 @@
                     editorState.selectedDataset.getValue(),
                 );
                 editorState.selectedClassGraph.updateValue(
-                    nodeClickEvent.node.data.graphUri
+                    nodeClickEvent.node.data.graphUri,
                 );
                 editorState.selectedClassUUID.updateValue(id);
             } else {
@@ -451,8 +451,6 @@
                 classPositionDTOList,
             );
         }
-
-
     }
 
     async function getLayoutedNodes(nodes, edges) {
