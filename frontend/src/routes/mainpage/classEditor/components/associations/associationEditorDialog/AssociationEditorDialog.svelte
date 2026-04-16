@@ -29,17 +29,12 @@
     import { saveApiAssociationToBackend } from "../save-association-to-backend.js";
     import Inverse from "./Inverse.svelte";
 
-    let {
-        showDialog = $bindable(),
-        associations,
-        association: associationProp,
-    } = $props();
+    let { showDialog = $bindable(), associations, association } = $props();
 
     const bec = new BackendConnection(fetch, PUBLIC_BACKEND_URL);
 
     let classEditorContext = $state();
     let isNewAssociation = $state(true);
-    let association = $derived(associationProp);
     let readonly = $derived(classEditorContext?.readonly);
 
     $effect(async () => {
@@ -67,7 +62,6 @@
 
     function onOpen() {
         classEditorContext = getContext("classEditor");
-        association = associationProp;
         if (!associations.contains(association)) {
             isNewAssociation = true;
             association = new ReactiveAssociation({
