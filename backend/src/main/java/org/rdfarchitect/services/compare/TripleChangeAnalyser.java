@@ -221,8 +221,14 @@ public class TripleChangeAnalyser {
 
             var from = originalValues.get(predicate);
             var to = updatedValues.get(predicate);
+            var valuesDiffer = !Objects.equals(from, to);
+            if (RDFS.comment.asNode().equals(predicate)) {
+                var normalizedFrom = normalizeCommentValue(from);
+                var normalizedTo = normalizeCommentValue(to);
+                valuesDiffer = !Objects.equals(normalizedFrom, normalizedTo);
+            }
 
-            if (!Objects.equals(from, to)) {
+            if (valuesDiffer) {
                 var change = new TriplePropertyChange();
                 change.setPredicate(predicate.toString());
                 change.setFrom(from != null ? from.toString() : null);
@@ -260,6 +266,18 @@ public class TripleChangeAnalyser {
         }
 
         return propertyChanges;
+    }
+
+    private String normalizeCommentValue(Node value) {
+        if (value == null) {
+            return null;
+        }
+        if (value.isLiteral()) {
+            var language = value.getLiteralLanguage() == null ? "" : value.getLiteralLanguage();
+            var datatype = value.getLiteralDatatypeURI() == null ? "" : value.getLiteralDatatypeURI();
+            return value.getLiteralLexicalForm().strip() + "|" + language + "|" + datatype;
+        }
+        return value.toString();
     }
 
     /**
