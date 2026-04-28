@@ -6,43 +6,43 @@ sidebar_position: 1
 
 # RDFArchitect
 
-**RDFArchitect** is an open-source, web-based tool for visualizing, editing, validating, and sharing RDFS schemas with **CIM** extensions — as used in **CGMES** and the **ENTSO-E** network code profiles — together with their **SHACL** constraints.
+Documentation for **RDFArchitect 1.0.0** — the open-source web-based editor for CIM/CGMES and ENTSO-E RDFS schemas with SHACL constraints.
 
-It provides a practical modeling workflow for CIM-based RDF schemas without requiring a desktop modeling tool or RDF expertise from every team member who needs to read or review the model.
+RDFArchitect is a web-based tool for **visualising, editing, and sharing RDFS schemas with CIM extensions** — as used in CGMES and the ENTSO-E Network Code Profiles — together with their **SHACL constraints**. It is an open-source alternative to proprietary CIM/RDF modelling tools.
 
 ![RDFArchitect editor](/img/screenshots/editor.png)
 
-## What can you do with it?
+## Who should read what
 
-- **Import** RDFS, OWL, and SHACL files (Turtle, RDF/XML, N-Triples, etc.).
-- **Edit** classes, attributes, associations, enumerations, and notes through a UML-style diagram editor.
-- **Validate** schemas using both auto-generated and hand-written SHACL shapes.
-- **Compare** two schema versions side-by-side and review changes at the package, class, and property level.
-- **Migrate** instance data from one schema version to the next via a guided wizard.
-- **Share** read-only snapshots so reviewers can browse a schema without installing anything.
-- **Track** every change in a per-schema history, with undo/redo, and version restore.
+If you are new to RDFArchitect, start with the **User Guide**. Otherwise, the table below points you to the most relevant section for your role.
 
-## Who is it for?
+| If you are…                                  | Start with                                                            | Then read                                                                                        |
+| -------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| An **electrical engineer** / CIM modeller    | [User Guide](/user-guide/overview)                                    | [CIM/CGMES concepts mapping](/reference/cim-mapping), [Features](/reference/features)            |
+| A **software architect** / schema maintainer | [User Guide](/user-guide/overview)                                    | [Features](/reference/features), [CIM mapping](/reference/cim-mapping)                           |
+| A **project manager** / product owner        | [Features](/reference/features)                                       | [User Guide — sharing](/user-guide/sharing-and-exporting), [migration](/user-guide/migration)    |
+| An **administrator** deploying the service   | [Installation](/admin-guide/installation)                             | [Administrator's guide](/admin-guide/overview), [FAQ](/reference/faq)                            |
+| A **developer** contributing or extending    | [Developer guide](/developer-guide/overview)                          | [`CONTRIBUTING.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/.github/CONTRIBUTING.md)    |
+| Just looking for screenshots                 | [Screenshots](/user-guide/screenshots)                                |                                                                                                  |
 
-| Role | Why you care |
-| ---- | ------------ |
-| **Power-system / electrical engineers** | Read, navigate, and review CIM-based schemas without a heavyweight UML tool. |
-| **Information modelers / data architects** | Author RDFS classes, attributes, associations, and SHACL constraints with full versioning and comparison. |
-| **Project managers / product owners** | Inspect snapshots, comment on diagrams, and compare profile versions during release reviews. |
-| **Developers** | Build on a Spring-Boot/SvelteKit codebase that exposes a clean REST API and is documented end-to-end. |
-| **Administrators** | Deploy via Docker Compose, point at a Fuseki triple store, and integrate access control via a reverse proxy. |
+## What you can do with it
 
-## Pick your starting point
+- **Import and export** CGMES and ENTSO-E profiles in RDF/XML, Turtle, or N-Triples.
+- **Visualise** classes, attributes, associations, and inheritance as UML-style diagrams, organised by package.
+- **Edit** every aspect of a profile — classes, attributes, associations, enum entries, stereotypes, comments, namespaces, and the profile header — through a validating UI.
+- **Generate SHACL** automatically from the schema, and manage imported SHACL alongside it.
+- **Track changes** with an edit changelog, undo/redo, and the ability to restore any previous state.
+- **Compare** two versions of a profile and see a structured list of additions, removals, and modifications.
+- **Migrate** instance data between profile versions by generating a reviewable **SPARQL UPDATE script** through a guided wizard.
+- **Share** a complete, read-only, navigable view of a profile via a single URL — no downloads, no tooling required by the recipient.
 
-import DocCardList from '@theme/DocCardList';
+## Architecture, briefly
 
-<DocCardList items={[
-  { type: 'link', href: '/user-guide/overview', label: 'User Guide', description: 'Step-by-step walkthrough of the editor, import/export, SHACL, comparison, migration, and sharing.' },
-  { type: 'link', href: '/developer-guide/overview', label: 'Developer Guide', description: 'Architecture, contribution workflow, and end-to-end feature recipes for the codebase.' },
-  { type: 'link', href: '/admin-guide/installation', label: 'Administration', description: 'Installation, configuration, Fuseki, backups, access control, and upgrades.' },
-  { type: 'link', href: '/reference/cim-mapping', label: 'CIM/CGMES Mapping', description: 'How RDFArchitect concepts map to CIM, CGMES, and ENTSO-E terminology.' },
-  { type: 'link', href: '/reference/faq', label: 'FAQ & Troubleshooting', description: 'Answers to the most common questions and known issues.' },
-]} />
+- **Frontend** — SvelteKit single-page application
+- **Backend** — Spring Boot REST service
+- **Triple store** — Apache Jena Fuseki (any SPARQL 1.1 endpoint works)
+
+Everything is open-source, Apache 2.0 licensed.
 
 ## Maintenance and commercial support
 
@@ -50,6 +50,15 @@ RDFArchitect is actively developed and maintained by **[SOPTIM AG](https://www.s
 
 If your organisation needs paid support or has integration questions, contact [opencgmes@soptim.de](mailto:opencgmes@soptim.de).
 
+## Community and support
+
+- **Bugs and feature requests**: [GitHub Issues](https://github.com/SOPTIM/RDFArchitect/issues)
+- **Questions and discussion**: [GitHub Discussions](https://github.com/SOPTIM/RDFArchitect/discussions)
+- **Security reports**: see [`SECURITY.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/.github/SECURITY.md)
+- **Contributing**: see [`CONTRIBUTING.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/.github/CONTRIBUTING.md)
+
 ## License
 
 RDFArchitect is released under the [Apache License 2.0](https://github.com/SOPTIM/RDFArchitect/blob/main/LICENSE).
+
+*Version: 1.0.0 — Released 2026-04-24. See [Changelog](/reference/changelog) for the release history.*

@@ -1,37 +1,40 @@
 ---
-title: User Guide Overview
+title: Overview
 sidebar_position: 1
 ---
 
 # User Guide
 
-This guide walks through everything you can do with RDFArchitect from a browser, in roughly the order you'll encounter the features.
+A practical walkthrough of RDFArchitect for people who work with **CIM/CGMES** and the **ENTSO-E Network Code Profiles**, but who do not want to write code.
 
-## Reading order
+RDFArchitect is a browser-based editor for **RDFS schemas with CIM extensions** and their **SHACL constraints**. It is designed around the daily work of the CIM community: importing a profile, inspecting its package and class structure, making controlled changes, validating against SHACL, comparing releases, planning a migration, and sharing the result.
 
-1. **[Concepts](./concepts)** — schemas, packages, classes, properties, namespaces. Start here if you've never used the tool.
-2. **[Getting started](./getting-started)** — open the application, create your first schema, import a file.
-3. **[Working with schemas](./schemas)** — how schemas are organised in the UI.
-4. **[Import & export](./import-export)** — supported formats and what gets imported.
-5. **[Editing classes](./editing-classes)** — labels, attributes, associations, enumerations, comments, inheritance.
-6. **[Packages and diagrams](./packages-and-diagrams)** — structure your model with packages and explore it as a UML-style diagram.
-7. **[SHACL](./shacl)** — generated constraints, custom shapes, and inspection views.
-8. **[History](./history)** — review changes, undo, restore earlier states.
-9. **[Snapshots and sharing](./snapshots-and-sharing)** — produce browsable handoff artefacts.
-10. **[Comparing schemas](./comparing-schemas)** — diff two schemas or files.
-11. **[Schema migration](./migration-wizard)** — the migration wizard.
-12. **[Prefixes](./prefixes)** — manage namespace prefixes.
-13. **[Read-only mode](./readonly-mode)** — what changes when a schema is locked.
+This guide assumes you have the application running. If you don't, see [Installation](/admin-guide/installation).
 
-## What this guide assumes
+## Core concepts in 2 minutes
 
-- You can open a browser and click links.
-- You have access to a running RDFArchitect instance.
-- You know roughly what a CIM schema is. If you don't, see the [CIM/CGMES mapping](/reference/cim-mapping) page first.
+Before the tour, three terms do a lot of work in RDFArchitect and it is worth fixing them up front.
 
-You **do not** need to know SPARQL, OWL, Turtle syntax, or any RDF-specific tooling to use RDFArchitect.
+**Dataset.** A dataset is the outermost container. Think of it as a "workspace" on the underlying triple store. A typical setup has one dataset called `default`, plus one dataset per snapshot that has been shared. Every import, every graph, every change is scoped to exactly one dataset.
 
-## What this guide does not cover
+**Graph (schema).** Inside a dataset, each **schema** lives in its own named graph. When you import a CGMES profile — say, `EquipmentProfile_v3.0.0.rdf` — that profile becomes *one graph* inside the dataset. You can have many graphs side-by-side in the same dataset (e.g. EQ, TP, SSH, SV profiles of a CGMES release), and you can move between them from the navigation tree on the left.
 
-- Building or deploying RDFArchitect yourself — see the [Administration](/admin-guide/installation) section.
-- Contributing code — see the [Developer Guide](/developer-guide/overview).
+**Package.** Inside a graph, classes are grouped into UML-style packages (e.g. `Core`, `Wires`, `Generation::Production`). Packages are the first-class organisational unit for the diagram area: when you select a package, the centre canvas draws exactly the classes that belong to it, with associations to classes in other packages shown at the boundary.
+
+The rest of the editor is built on top of those three. The navigation tree reads *"Dataset → Graph → Package → Class"*, and almost every action you trigger is implicitly scoped by what you have selected in that tree.
+
+## How this guide is organised
+
+1. **[The workspace and importing data](./workspace-and-importing)** — the editor layout and how to get content in.
+2. **[Organising a schema](./organising-schemas)** — datasets, graphs, packages.
+3. **[Editing classes](./editing-classes)** — the right-hand class editor.
+4. **[Working with namespaces](./namespaces)**.
+5. **[The profile header](./profile-header)** — ontology metadata.
+6. **[SHACL — constraints and validation](./shacl)**.
+7. **[Reviewing changes](./history)** — changelog, undo, restore.
+8. **[Comparing schemas](./comparing-schemas)**.
+9. **[Schema migration](./migration)** — the five-step wizard.
+10. **[Sharing and exporting](./sharing-and-exporting)**.
+11. **[Read-only mode](./read-only-mode)**.
+12. **[Search & tips](./search-and-tips)**.
+13. **[Screenshots](./screenshots)**.

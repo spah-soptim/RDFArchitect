@@ -1,11 +1,8 @@
----
-title: FAQ & Troubleshooting
-sidebar_position: 3
----
-
-# FAQ & Troubleshooting
+# RDFArchitect — FAQ & Troubleshooting
 
 Answers to common questions, in the order they typically come up.
+
+---
 
 ## General
 
@@ -29,6 +26,8 @@ In the triple store you configure — **Apache Jena Fuseki** by default. If you 
 
 Not from the project itself. Any hosting is done by individual users or organisations.
 
+---
+
 ## Imports and formats
 
 ### Which file formats can I import?
@@ -49,7 +48,9 @@ Check whether the classes are in a package that is not visible under the current
 
 ### My RDF/XML file is larger than 50 MB.
 
-The default upload limit is 50 MB. For larger files, an administrator can raise the limits described in the [installation guide](/admin-guide/installation#file-upload-size). For most CGMES releases, 50 MB is more than enough; the profiles themselves are usually a few MB each.
+The default upload limit is 50 MB. For larger files, an administrator can raise the limits described in the [installation guide](installation.md#file-upload-size). For most CGMES releases, 50 MB is more than enough; the profiles themselves are usually a few MB each.
+
+---
 
 ## Editing
 
@@ -73,6 +74,8 @@ Three possibilities:
 
 A reserved package that represents classes which have not been assigned to any explicit package. It cannot be renamed or deleted. When importing a profile that uses explicit packages everywhere, this is usually empty.
 
+---
+
 ## SHACL
 
 ### Why are there two separate SHACL views — generated and custom?
@@ -92,6 +95,8 @@ The TTL parser rejects the file. The dialog highlights the offending line; most 
 
 RDFArchitect does not run SHACL validation itself — it produces and manages the SHACL. To validate instance data, export the SHACL (File → Export → Constrains (SHACL)) and run it against your data with any SHACL engine (Apache Jena's `shacl` CLI, TopBraid, pySHACL, etc.).
 
+---
+
 ## Migration
 
 ### The migration wizard says it cannot handle all edge cases. Which ones?
@@ -106,6 +111,8 @@ No. Always run it against a test dataset first, then validate the result with th
 
 Yes. The output is plain SPARQL 1.1 UPDATE and can be opened, inspected, and modified in any text editor before execution.
 
+---
+
 ## Sharing and collaboration
 
 ### I shared a snapshot but the recipient can't open it.
@@ -114,11 +121,13 @@ The recipient needs network access to the same RDFArchitect instance. Snapshots 
 
 ### Can I un-share a snapshot?
 
-Not from the UI as of 1.0.0. Snapshots are stored as datasets in the triple store; an administrator can delete the corresponding dataset from Fuseki directly. See the [administrator's guide](/admin-guide/access-control#snapshot-links).
+Not from the UI as of 1.0.0. Snapshots are stored as datasets in the triple store; an administrator can delete the corresponding dataset from Fuseki directly. See the [administrator's guide](administrator-guide.md#snapshot-links).
 
 ### Two people are editing the same graph at the same time. What happens?
 
 Last write wins. RDFArchitect does not currently have multi-user conflict resolution. In practice, teams coordinate per-graph ownership (one editor per profile at a time) or use the snapshot + review workflow for collaborative work.
+
+---
 
 ## Performance
 
@@ -129,6 +138,8 @@ Switch the renderer. From a right-click on the diagram canvas you can toggle bet
 ### The changelog view is slow.
 
 The changelog of a long-lived graph can contain thousands of entries. Older entries are transparently compressed, but rendering the full list still takes time. Using the search bar at the top of the changelog is faster than scrolling.
+
+---
 
 ## Operations (for administrators)
 
@@ -142,12 +153,14 @@ Export every dataset as RDF/XML, switch `database.databaseType` to `http`, point
 
 ### I'm getting 413 Payload Too Large on large imports.
 
-Raise the upload limits described in the [installation guide](/admin-guide/installation#file-upload-size). If a reverse proxy sits in front of the backend, it likely has its own body size limit that also needs to be raised (`client_max_body_size` for nginx).
+Raise the upload limits described in the [installation guide](installation.md#file-upload-size). If a reverse proxy sits in front of the backend, it likely has its own body size limit that also needs to be raised (`client_max_body_size` for nginx).
+
+---
 
 ## Where to get help
 
-- **Documentation**: this site.
+- **Documentation**: the `docs/` folder in the repository.
 - **Bug reports and feature requests**: [GitHub Issues](https://github.com/SOPTIM/RDFArchitect/issues).
 - **Questions and discussion**: [GitHub Discussions](https://github.com/SOPTIM/RDFArchitect/discussions).
-- **Commercial support, professional services, custom extensions**: contact SOPTIM AG at [opencgmes@soptim.de](mailto:opencgmes@soptim.de).
-- **Security reports**: see [`SECURITY.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/.github/SECURITY.md) for responsible disclosure.
+- **Commercial support, professional services, custom extensions**: contact SOPTIM AG via the contact information on the [SOPTIM GitHub organisation page](https://github.com/SOPTIM).
+- **Security reports**: see `SECURITY.md` in the repository for responsible disclosure.

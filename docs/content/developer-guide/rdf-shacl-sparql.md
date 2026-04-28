@@ -1,87 +1,31 @@
 ---
-title: RDF, SHACL, and SPARQL
+title: Working With RDF, SHACL, and SPARQL
 sidebar_position: 9
 ---
 
-# Working With RDF, SHACL, and SPARQL
-
-Where in the codebase to land RDF-, SHACL-, or SPARQL-shaped work.
+# Working with RDF, SHACL, and SPARQL Inside the Codebase
 
 ## Apache Jena
 
-The backend uses [Apache Jena 5](https://jena.apache.org/). The primary types you'll touch are `Dataset`, `Model`, `Resource`, `Property`, `Literal`, plus the SPARQL execution helpers.
+The backend uses **Apache Jena 5.x** end-to-end. The relevant entry points are:
 
-Always go through the project's database/graph ports rather than hitting Jena directly. The ports handle transactions, snapshot routing, and read-only enforcement consistently.
+- `org.apache.jena.rdf.model.Model` — the high-level RDF API. Used in services for read-side work.
+- `org.apache.jena.graph.Graph` — the low-level triple-set API. Used in `database/`, `rdf/`, and the in-memory adapter where performance matters.
+- `org.apache.jena.query.QueryFactory` / `UpdateAction` — for SPARQL.
+- `org.apache.jena.shacl.*` — for SHACL evaluation when needed.
 
-## Reading and writing data
+The `rdf/` package contains the project's own helpers (graph wrappers with version history, RDF formatting that matches ENTSO-E conventions, model merging utilities). Use these instead of Jena's defaults where they exist — they encode CIM-specific output decisions (resource ordering, prefix handling, etc.) that downstream tooling expects.
 
-The repo wraps Jena's transaction lifecycle so the standard pattern is opening a read or write transaction through the port, performing the operation, committing, and ensuring `end()` runs. Write operations also go through the change-history hook — every mutation that touches user-visible model state must record a history entry.
+## SHACL generation
 
-Browse a representative service implementation for the canonical shape; copy it.
+SHACL shapes are generated procedurally from CIM model objects. The entry point is `services/shacl/SHACLGenerateService` (use case: `SHACLGenerateUseCase`), which delegates to the builders under `shacl/property/shapegenerator/` and `shacl/property/shapebuilder/`. Each property type (attribute, association, enum-typed) has its own builder.
 
-## SPARQL templates
+When fixing a SHACL bug, the most useful starting point is `SHACLFromCIMGeneratorTest`. It loads a known-good CIM graph and asserts the shape of the generated SHACL — adding a failing case there is the quickest way to reproduce.
 
-Templates live under `backend/src/main/resources/sparql-templates/`. The repo's helper:
+## Diagram layout
 
-- Loads templates by name from the classpath.
-- Supports parameter substitution.
-- Caches parsed queries.
+Layout positions are persisted as RDF using a small custom vocabulary under `dl/rdf/` (Diagram Layout). Layout DTOs live in `api/dto/rendering/` with renderer-specific subdirectories (`svelteflow/`, `mermaid/`). When changing the layout schema, update both the `dl/` model and any code that reads or writes layout data.
 
-Templates are plain `.sparql` files. They are the right place for *every* non-trivial query in the application:
+## Migration scripts
 
-- They're auditable — operators can see what queries the application runs.
-- They're testable — they can be exercised against an in-memory dataset directly.
-
-Inline SPARQL strings inside Java code should be avoided.
-
-## SHACL generator
-
-The `shacl/` package contains the components that:
-
-- Walk the schema and produce a flat enumeration of classes, attributes, associations, and enums.
-- Emit one `sh:NodeShape` per class.
-- Emit `sh:property` shapes for each attribute and association.
-- Emit `sh:in` for enumerations.
-- Merge generated shapes with custom shapes loaded from the schema.
-
-Generated shapes are deterministic — given the same model, the output is byte-identical. This is why we don't persist them.
-
-### Adding a SHACL constraint kind
-
-If you need the generator to emit a new constraint:
-
-1. Decide whether it's structural (per-property) or class-level.
-2. Extend the corresponding builder so the new constraint flows through the same emission path.
-3. Update the SHACL importer to recognise the same predicate when importing files, so generated and imported shapes stay symmetric.
-4. Add a fixture-based test covering a model exhibiting the constraint.
-
-Don't fork a new builder — extend the existing pipeline.
-
-## Migration template composer
-
-The migration wizard's last step lives in `backend/src/main/java/org/rdfarchitect/migration/`. It reads the comparison result and emits a SPARQL Update script. Templates per migration kind live in `resources/sparql-templates/migration/`:
-
-```
-migration/
-├── class-renamed.sparql
-├── class-deleted.sparql
-├── attribute-added.sparql
-├── attribute-renamed.sparql
-├── attribute-datatype-changed.sparql
-├── attribute-fixed-value-changed.sparql
-├── association-added.sparql
-├── association-renamed.sparql
-├── domain-renamed.sparql
-├── enum-entry-renamed.sparql
-├── enum-entry-deleted.sparql
-└── property-deleted.sparql
-```
-
-Each template handles one kind of detected difference. Adding a new pattern means adding the template, exposing the corresponding step in the wizard's UI, and wiring the composer to combine them.
-
-## Things to be careful about
-
-- **Blank nodes.** Jena assigns fresh blank-node IDs on import. Round-trip identity is by structure, not by identifier. The exporter sorts blank nodes deterministically so diffs stay small.
-- **Datatype precision.** `xsd:integer` and `xsd:int` are not the same type to Jena. Don't normalise them silently — the schema author may have intended a specific one.
-- **Order.** RDF is a set, not a sequence. Where the user perceives order, it's stored explicitly via an ordering predicate.
-- **Whitespace in literals.** Comments contain newlines and indentation that should round-trip. The compare engine normalises whitespace for diffing but never normalises it on disk.
+The migration generator stitches together templates from `src/main/resources/sparql-templates/migration/`. Each template is a parameterised SPARQL UPDATE block — `class-renamed.sparql`, `attribute-renamed.sparql`, etc. The composer is in `services/schemamigration/`. Adding a new migration capability means: (1) adding the template, (2) wiring it into the composer, and (3) extending the wizard's confirmation step DTOs and UI.

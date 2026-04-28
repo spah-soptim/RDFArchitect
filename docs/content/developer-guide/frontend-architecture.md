@@ -1,102 +1,88 @@
 ---
 title: Frontend Architecture
-sidebar_position: 6
+sidebar_position: 4
 ---
 
 # Frontend Architecture
 
-The frontend is a SvelteKit 2 application using Svelte 5 runes, Vite 7, Tailwind 4, and Bits UI 2. It is a single-page editor with a small number of routes.
+## Stack
 
-## Stack at a glance
+- **SvelteKit** (Svelte 5 with runes — `$state`, `$derived`, `$effect`, `$props`, `$bindable`).
+- **Vite** for build and dev server.
+- **Tailwind CSS** for styling, with project-specific design tokens (CSS variables) in `src/lib/styles/`.
+- **bits-ui** for headless dialog, menubar, and dropdown primitives, wrapped in project-local components under `src/lib/components/bitsui/`.
+- **@xyflow/svelte** (SvelteFlow) for diagram rendering, with **elkjs** for auto-layout.
+- **Mermaid** as the alternative renderer.
+- **CodeMirror 6** with `codemirror-lang-turtle` for the TTL editors.
+- **Asciidoctor.js** for rendering class comments.
+- **Vitest** for unit tests, **jsdom** for the DOM environment.
 
-| Concern | Choice |
-| ------- | ------ |
-| Framework | Svelte 5 (runes) + SvelteKit 2 |
-| Bundler | Vite 7 |
-| Styling | Tailwind 4 + theme tokens in `app.css` |
-| Modal primitives | Bits UI 2 |
-| Diagram engine | SvelteFlow + custom layouting |
-| Lint | ESLint with custom rules |
-| Test | Vitest |
-| State | Svelte runes + custom reactive wrappers + shared-state singletons |
+## Routes
 
-## Route map
+SvelteKit's filesystem routing is used straightforwardly:
 
-The route directories under `frontend/src/routes/` correspond directly to the URL paths:
+```
+/                  →  Homepage (routes/+page.svelte)
+/mainpage          →  Main editor (left tree + diagram + right class editor)
+/changelog         →  Edit history view
+/compare           →  Compare results view
+/migrate           →  5-step migration wizard
+/shacl/...         →  SHACL views
+```
 
-| Path | Source | Purpose |
-| ---- | ------ | ------- |
-| `/` | `routes/+page.svelte` | Welcome page. |
-| `/mainpage` | `routes/mainpage/` | The editor (diagram, navigation, class editor). |
-| `/changelog` | `routes/changelog/` | Per-schema history with restore. |
-| `/compare` | `routes/compare/` | Comparison view. |
-| `/migrate` | `routes/migrate/` | Migration wizard. |
-| `/shacl` | `routes/shacl/` | SHACL inspection dialogs. |
-| `/layout` | `routes/layout/` | Shared layout primitives, top toolbar. |
+The editor listens to URL parameters `?dataset=...&graph=...&package=...` to support deep links.
 
-Cross-cutting dialogs (import/export, namespace management, snapshot, new class/package, dataset/graph deletion, search) live next to the route they're invoked from, or at the routes root for the dialogs used from multiple places.
+## Reactive models
 
-## Reactive wrappers
+A central pattern: every editable domain object has a **reactive wrapper** in `lib/models/reactive/models/` (e.g. `reactive-class.svelte.js`, `reactive-namespace.svelte.js`, `reactive-ontology.svelte.js`). These wrappers:
 
-The frontend wraps the backend's plain JSON shapes in runes-backed Svelte classes, one per domain entity (class, attribute, association, namespace, package, shape). This is what lets components mutate fields with `$state`-like ergonomics while keeping serialization clean.
+- Hold the original DTO and a working copy.
+- Track `isModified`, `isValid`, and per-field violations as `$derived` runes.
+- Expose `save()`, `reset()`, and field accessors.
+- Drive the inline validation visible in dialogs.
 
-Look for the wrapper files under `frontend/src/lib/models/` to see the convention before introducing a new entity.
+**DTO ↔ reactive object mapping** lives in `lib/models/reactive/mapper/`. Whenever you add a new field to the backend that the frontend needs to edit, the chain to update is:
 
-## Backend communication
-
-A single API wrapper in `frontend/src/lib/api/` is the only place that constructs URLs to the backend. Components import it and call methods on it.
-
-Three rules:
-
-1. **Always go through the API wrapper.** Don't build URLs by hand.
-2. **Preserve `credentials: "include"`** on requests. Required for the session cookie.
-3. **Use the runtime config** (`PUBLIC_BACKEND_URL`) — never hard-code `http://localhost:8080`.
-
-Adding a new endpoint means adding the matching method to the wrapper.
-
-## State and data flow
-
-Three layers of state, in order of growing scope:
-
-| Layer | Where | Lifetime |
-| ----- | ----- | -------- |
-| **Component-local** | Inside the component file. | Component lifetime. |
-| **Route-shared** | Reactive instances passed via context. | Route lifetime. |
-| **Cross-route** | Shared-state singletons in `frontend/src/lib/`. | Browser session. |
-
-There is no Redux/Pinia/Zustand-style global store. Don't add one. Reuse the existing primitives.
+1. Backend DTO.
+2. Frontend type in `lib/models/dto/`.
+3. Reactive wrapper in `lib/models/reactive/models/`.
+4. DTO ↔ reactive mapper.
+5. UI component that exposes the field.
 
 ## Validity rules
 
-Per-component validation logic lives next to the component. The pattern is a pure function that takes the current state and returns either `null` or an array of error messages. The component renders the messages inline and disables save while there are errors.
+`lib/models/reactive/validity-rules/validityFunctions.js` is the single home for cross-cutting validation (label uniqueness, prefix uniqueness, valid IRIs, valid NCNames, etc.). Reuse what's there before adding a new function.
 
-## Script-block ordering convention
+## Backend communication
 
-Svelte components in this repo follow a strict ordering of `<script>` content, documented in `frontend/docs/script-structure.md`:
+`BackendConnection` in `lib/api/backend.js` is a hand-written class with one method per backend endpoint. Every method:
 
-1. Imports.
-2. `$props` declaration.
-3. Local `$state`.
-4. `$derived`.
-5. Functions.
-6. `$effect`.
+- Builds the URL from `PUBLIC_BACKEND_URL`.
+- Uses `credentials: "include"` so the session cookie travels.
+- Returns the raw `Response` — callers decide whether to `.json()`, `.text()`, or `.blob()`.
 
-ESLint enforces this. Don't fight it — the linearity makes diffs much easier to read.
+When you add a new backend endpoint, add the matching method here. Do not call `fetch()` directly from a component — the indirection makes mocking in tests possible and keeps URLs in one place.
+
+## Shared state
+
+`lib/sharedState.svelte.js` exports cross-component reactive state, primarily:
+
+- `editorState.selectedDataset` / `selectedGraph` / `selectedPackageUUID` / `selectedClassUUID`
+- `forceReloadTrigger` — a "kick everything to refresh" signal used after destructive actions
+- `compareState`, `migrationState` — wizard state passed across pages
+
+Use these instead of inventing per-component prop drilling for global selections.
+
+## Svelte script ordering
+
+The repository enforces a specific script-block ordering (imports → props → constants → state → derived → effects → lifecycle → functions). The full rationale and ESLint rule are in [`frontend/docs/script-structure.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/frontend/docs/script-structure.md). The custom rule lives at `frontend/eslint-rules/rules/svelte-script-order/`. When in doubt, run `npm run format` and follow whatever the auto-fixer produces.
 
 ## Custom ESLint rules
 
-Custom rules live in `frontend/eslint-rules/`. They cover the SPDX license header, the script-block ordering above, and the rule that backend access must go through the API wrapper. Read them when in doubt about why a lint warning fires.
+Three custom rules ship with the project:
 
-## Styling
+- `copyright-header` — enforces the Apache 2.0 header on every source file.
+- `svelte-file-structure` — order of `<script>`, markup, `<style>`.
+- `svelte-script-order` — order *inside* `<script>` blocks.
 
-Tailwind 4 with theme tokens defined in `src/app.css`. Components reach for utility classes; design tokens are referenced via CSS variables. Don't add ad-hoc colors — extend the token list.
-
-## Diagram rendering
-
-`src/lib/rendering/` holds the SvelteFlow-based renderer for class boxes and edges, the custom layouter for fresh packages, and the helpers that translate model objects into SvelteFlow nodes and edges.
-
-When a model changes, the rendering layer subscribes to the relevant reactive wrappers and recomputes only the affected parts.
-
-## Internationalisation
-
-There is no i18n infrastructure currently — UI strings are inline English. If you add a feature, keep strings in template literals; don't bolt on per-component translation tables in the meantime.
+If you write a new file, the auto-fixer (`npm run format`) inserts the header for you.

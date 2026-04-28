@@ -1,11 +1,8 @@
----
-title: Features Reference
-sidebar_position: 1
----
+# RDFArchitect — Features Reference
 
-# Features Reference
+A structured checklist of what RDFArchitect does, organised by the role most likely to care about it. Each feature links to the full explanation in the [User Guide](user-guide.md) where appropriate.
 
-A structured checklist of what RDFArchitect does, organised by the role most likely to care about it. Each feature links to the full explanation in the [User Guide](/user-guide/overview) where appropriate.
+---
 
 ## For electrical engineers and CIM modellers
 
@@ -44,6 +41,8 @@ Diagrams render classes with full attribute and association detail, inheritance 
 ### Visualise SHACL constraints on the class you are looking at
 
 Every attribute and association row in the class editor has a SHACL icon that opens exactly the constraints that target that property on that class. No need to grep through a SHACL file.
+
+---
 
 ## For software architects and schema maintainers
 
@@ -107,6 +106,8 @@ Every graph can be exported to RDF/XML, Turtle, or N-Triples, with configurable 
 
 Every feature in the UI is backed by a REST endpoint. Swagger UI is served at `/swagger-ui.html` on the backend and lists every operation with full request/response schemas. This makes RDFArchitect scriptable for CI pipelines (e.g. export a canonical representation on every commit, run a diff in a pull request, generate a release note from the changelog).
 
+---
+
 ## For project managers and product owners
 
 ### Sharing and review
@@ -132,6 +133,8 @@ Apache 2.0 licence. Data is RDF throughout; imports and exports are standard W3C
 ### Predictable dependencies
 
 Spring Boot backend, SvelteKit frontend, Apache Jena, Apache Jena Fuseki. All mature, widely adopted, and available as container images.
+
+---
 
 ## Feature-by-feature: where in the UI
 
@@ -163,6 +166,8 @@ Spring Boot backend, SvelteKit frontend, Apache Jena, Apache Jena Fuseki. All ma
 | Property-specific SHACL             | Class editor → SHACL icon next to each row       |
 | Class-level SHACL                   | Class editor → SHACL section                     |
 | API documentation (Swagger UI)      | `http://<backend-host>:8080/swagger-ui.html`     |
+
+---
 
 ## Current limitations (as of 1.0.0)
 

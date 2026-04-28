@@ -1,74 +1,31 @@
 ---
 title: Editing Classes
-sidebar_position: 6
+sidebar_position: 4
 ---
 
 # Editing Classes
 
-The class editor is the primary editing surface in RDFArchitect.
+The class editor on the right-hand side is the main surface for modelling work. It is laid out so that everything about a single class is reachable from one scroll, without navigating away.
 
 ![Class editor](/img/screenshots/class-editor.png)
 
-## Opening the editor
-
-Open a class either from the diagram (select or focus the class) or from the package navigation tree. Switching to another class swaps the contents in place.
-
 ## What you can edit
 
-The editor exposes everything that defines a class:
+- **Label and URI namespace.** The human-readable name and the namespace it lives under. The editor enforces label uniqueness and flags invalid characters inline.
+- **Package.** Moves the class between packages in the current graph.
+- **Super class.** Sets or clears inheritance. The picker shows all classes from the current graph and any external packages it references.
+- **Stereotypes.** CIM uses stereotypes heavily (`«enumeration»`, `«CIMDatatype»`, `«Primitive»`, `«Compound»`, etc.). They are selected from the list of known stereotypes and shown in the diagram above the class name.
+- **Comment.** Free-text description, rendered as AsciiDoc in the class editor so that lists, code snippets, and links are formatted sensibly when reading back a profile.
+- **Attributes.** Data-typed properties. Each row defines a local name, URI namespace, datatype (from the CIM primitive datatypes or xsd types), cardinality, a fixed value if any, and a comment.
+- **Associations.** Links to other classes. You set the target class, role name, multiplicity (`0..1`, `1`, `0..*`, `1..*`), the inverse role where applicable, and a comment.
+- **Enum entries.** Present only when the class has the `«enumeration»` stereotype. Each entry has a label, URI, and comment and is ordered in the list.
+- **SHACL on a property.** Every attribute and association row has a small icon that opens the property-specific SHACL dialog (see [SHACL](./shacl)).
+- **UUID.** The internal resource UUID is shown read-only. It is stable across edits and is what RDFArchitect uses internally to refer to the class.
 
-### Identity and metadata
+## Validation as you type
 
-- **Label** — the human-readable name (`rdfs:label`).
-- **IRI** — the class identifier; must be unique within the schema.
-- **Package** — the package the class belongs to.
-- **Parent class** — single-inheritance pointer (`rdfs:subClassOf`); may be empty.
-- **Stereotype** — UML stereotype (e.g. abstract, concrete, primitive, CIM datatype, enumeration). A class may carry more than one.
-- **Comment** — multi-line description (`rdfs:comment`).
+The editor does not wait for save to tell you something is wrong. Label collisions, empty required fields, duplicate attribute names, invalid URI components, and SHACL violations caused by the pending changes are all reported inline as you type. The **Save** button stays disabled while there are unresolved issues, and a list of violations is shown above the button.
 
-### Attributes
+## Discard or adopt unsaved changes
 
-A class's attributes are listed for inline editing. Each one carries:
-
-- **Name** — used as the IRI fragment.
-- **Datatype** — chosen from a drop-down: XSD primitives, CIM primitives, or another enum class.
-- **Multiplicity** — `0..1`, `1..1`, `0..*`, `1..*`, or a custom range.
-- **Fixed value** — optional default/constant.
-- **Stereotype** — free text.
-- **Comment** — per-attribute description.
-
-### Associations
-
-Object-valued properties pointing from this class to another. Each one has a name, a target class, source and target multiplicities, and an optional stereotype (e.g. `aggregate`, `composite`).
-
-Associations show up as labelled edges in the diagram, with arrowheads reflecting navigability.
-
-### Enum entries
-
-Visible only when the class is an enumeration. Each entry has a name (becomes the IRI fragment) and an optional comment. Order is preserved so an enumeration can be displayed and exported in a stable sequence.
-
-### SHACL
-
-The editor lists every shape that targets the current class, distinguishing **generated** (auto-derived) and **custom** (imported) shapes. Clicking a property shape reveals its constraints. See [SHACL](./shacl) for the full picture.
-
-## Renames
-
-Renaming a class updates every association inside the same schema that referred to it. The change is recorded in the history with the old and new IRI.
-
-## Validation on save
-
-RDFArchitect runs in-form validity checks before allowing save:
-
-- Empty mandatory fields are highlighted.
-- Duplicate IRIs (across the whole schema) are blocked.
-- Malformed multiplicity strings are rejected.
-
-Unsaved changes are kept locally as long as the editor stays open. Switching to another class warns about pending edits before discarding them.
-
-## Deleting a class
-
-The delete action asks you to acknowledge that:
-
-- All attributes and associations on this class will be deleted.
-- All associations from *other* classes that target this one will be deleted.
-- The deletion is reversible via the change history.
+If you switch classes while there are unsaved edits, RDFArchitect asks whether to save, discard, or **adopt** them. "Adopt" means: carry the pending changes over to the next class where they still apply — useful when you are making the same correction across a family of classes.

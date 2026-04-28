@@ -1,11 +1,8 @@
----
-title: CIM / CGMES Concepts Mapping
-sidebar_position: 2
----
-
-# CIM / CGMES Concepts Mapping
+# RDFArchitect — CIM / CGMES Concepts Mapping
 
 RDFArchitect uses a small, deliberately generic vocabulary so that it works equally well for CGMES profiles, ENTSO-E Network Code Profiles, internal extension profiles, and vendor-specific variants. This page maps that vocabulary onto the concepts you know from the CIM and CGMES worlds.
+
+---
 
 ## Vocabulary map
 
@@ -25,6 +22,8 @@ RDFArchitect uses a small, deliberately generic vocabulary so that it works equa
 | **Changelog**       | The edit history of a graph (= of a profile).                                                              |
 | **Migration script**| A SPARQL UPDATE that transforms instance data from source profile version to target profile version.      |
 
+---
+
 ## A CGMES release in RDFArchitect
 
 A typical CGMES release arrives as a zip containing several RDF/XML files — one per profile — plus accompanying SHACL files. In RDFArchitect that maps to:
@@ -41,6 +40,8 @@ A typical CGMES release arrives as a zip containing several RDF/XML files — on
 
 Classes that appear in multiple profiles (for example, `Terminal`) are modelled once in whichever profile owns the definition, and referenced from the others via external-package references.
 
+---
+
 ## An ENTSO-E Network Code Profile in RDFArchitect
 
 Network Code Profiles (e.g. the CGMES-based profiles that underpin the various Network Codes — OPDE, OPDM, etc.) follow the same structure. Because Network Code Profiles are typically *extension profiles* on top of a base CGMES version, a common setup is:
@@ -49,6 +50,8 @@ Network Code Profiles (e.g. the CGMES-based profiles that underpin the various N
 - **Graph(s)** = the profile(s) being edited. Base CGMES packages are referenced as *external packages*, not re-imported — the classes are visible in the navigation tree and can be associated to, but cannot be modified from within this dataset.
 - **Profile header** = the ENTSO-E ontology block (title, version, conformsTo, keyword, license, description, and the `Ontology.baseUriScheme` / `Ontology.versionIRI` fields). All of these are reachable from the "Add known fields" menu in the profile header editor.
 - **SHACL** = the official release SHACL is imported as custom SHACL; any additional internal rules you maintain are authored in the same custom SHACL document. The generated SHACL is always also available for comparison.
+
+---
 
 ## How RDFArchitect relates to the CIM UML
 
@@ -60,6 +63,8 @@ Practically this means:
 - You can produce a profile from scratch in RDFArchitect and it will be interoperable with UML-based downstream tooling.
 - Stereotypes, packages, cardinalities, inheritance, enumerations and comments are preserved on import and on export.
 - If your organisation still maintains the canonical profile in UML, RDFArchitect is a good *consumer* view — it is particularly useful for browsing, review, SHACL work, and migration planning without needing a UML tool licence.
+
+---
 
 ## What RDFArchitect does not do
 

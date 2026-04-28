@@ -1,41 +1,52 @@
 ---
-title: Developer Guide Overview
+title: Overview & Setup
 sidebar_position: 1
 ---
 
 # Developer Guide
 
-This guide is for engineers who plan to **read, modify, or extend the RDFArchitect codebase**. If you only want to use the application, see the [User Guide](/user-guide/overview).
+A guide for developers who want to **contribute** to RDFArchitect, **extend it**, or **integrate it** into other systems. If you only want to use the application, the [User Guide](/user-guide/overview) is the right place.
 
-## What's in this guide
+This guide complements [`.github/CONTRIBUTING.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/.github/CONTRIBUTING.md), which is the authoritative source on PR rules, commit format, and review process. Read that first; this document fills in the *how* behind those rules.
 
-1. **[Setup](./setup)** — toolchain, clone, build, run.
-2. **[Repository layout](./repository-layout)** — annotated tree of `backend/`, `frontend/`, `docker/`, `docs/`, `.github/`.
-3. **[Run and debug](./run-and-debug)** — running the two services, hot-reload, IDE setup, common pitfalls.
-4. **[Backend architecture](./backend-architecture)** — Spring Boot, hexagonal pattern, ports and adapters, Jena/Fuseki integration.
-5. **[Frontend architecture](./frontend-architecture)** — Svelte 5 runes, route map, reactive wrappers, the `BackendConnection` indirection.
-6. **[Data model](./data-model)** — RDFS/OWL/SHACL conventions used in the graph.
-7. **[Adding a feature end-to-end](./adding-a-feature)** — walked through all eight layers with a concrete example.
-8. **[RDF, SHACL, SPARQL](./rdf-shacl-sparql)** — Jena entry points, SHACL generator structure, migration template composer.
-9. **[Testing](./testing)** — backend unit/integration patterns, frontend Vitest, CI gates.
-10. **[Style and quality gates](./style-and-quality-gates)** — Spotless, Checkstyle, SpotBugs, Prettier, ESLint, custom rules.
-11. **[Dependencies](./dependencies)** — Renovate, license aggregation.
-12. **[CI and releases](./ci-and-releases)** — workflows, GHCR images, tag-driven releases.
-13. **[API stability](./api-stability)** — semver, breaking-change policy, Swagger as the public surface.
-14. **[Contribution scenarios](./contribution-scenarios)** — recipes for fix-a-UI-bug, add-a-field, fix-SHACL, add-migration-pattern, docs-only.
+## Required toolchain
 
-## Reading map by intent
+| Tool        | Minimum version | Notes                                                         |
+| ----------- | --------------- | ------------------------------------------------------------- |
+| Java        | 25              | Temurin is what CI uses; any compatible JDK works locally.    |
+| Maven       | 3.9.9           | The project does not use the Maven wrapper.                   |
+| Node.js     | 24              |                                                               |
+| npm         | 11              |                                                               |
+| Docker      | recent          | Optional, only needed for the Compose-based local stack.      |
+| Apache Jena Fuseki | 5.x      | Required at runtime — see [Installation](/admin-guide/installation). |
 
-| You want to… | Start at |
-| ------------ | -------- |
-| Make your first contribution | [Setup](./setup) → [Adding a feature](./adding-a-feature) |
-| Understand the backend | [Backend architecture](./backend-architecture) |
-| Understand the frontend | [Frontend architecture](./frontend-architecture) |
-| Add a SHACL feature | [RDF, SHACL, SPARQL](./rdf-shacl-sparql) |
-| Add a migration template | [Migration wizard](/user-guide/migration-wizard) → [RDF, SHACL, SPARQL](./rdf-shacl-sparql) |
-| Investigate why CI is red | [CI and releases](./ci-and-releases) |
-| Update a dependency | [Dependencies](./dependencies) |
+A working Fuseki at `http://localhost:3030` with a writable dataset called `default` is the simplest way to develop locally. The [installation guide](/admin-guide/installation#fuseki-quickstart) has a one-line Docker invocation.
 
-## How to ask questions
+## Clone, build, run
 
-Open a GitHub Discussion or Issue: [github.com/SOPTIM/RDFArchitect](https://github.com/SOPTIM/RDFArchitect). Pull requests are welcome — see [`.github/CONTRIBUTING.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/.github/CONTRIBUTING.md) for the policy.
+```bash
+git clone https://github.com/SOPTIM/RDFArchitect.git
+cd RDFArchitect
+
+# Backend (terminal 1)
+cd backend
+mvn spring-boot:run
+
+# Frontend (terminal 2)
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:1407`. Swagger UI for the backend is at `http://localhost:8080/swagger-ui.html`.
+
+## IDE setup
+
+- **IntelliJ IDEA** (Community works) for the backend. Import as a Maven project. Enable the Lombok plugin and "Annotation Processing" — Lombok and MapStruct both rely on it.
+- **VS Code** with the Svelte and ESLint extensions for the frontend. The repository ships with the lint config; no per-machine setup required.
+- **Pre-commit hook (optional)**: a quick `mvn -B spotless:apply && cd ../frontend && npm run format` before committing avoids most CI lint failures.
+
+## Hot reload
+
+- **Backend**: Spring Boot DevTools is *not* on the classpath. Restart Maven for changes. For tighter loops, run individual tests with `mvn -B test -Dtest=ClassName`.
+- **Frontend**: Vite hot-reloads on save. Type changes in `.ts` files require a tab refresh occasionally; component changes do not.

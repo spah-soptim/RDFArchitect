@@ -1,112 +1,100 @@
 ---
 title: Backend Architecture
-sidebar_position: 5
+sidebar_position: 3
 ---
 
 # Backend Architecture
 
-The backend is a Spring Boot 4 application running on Java 25, organised as a hexagonal (ports-and-adapters) architecture.
-
-## Layered overview
+The backend follows a deliberate **hexagonal / ports-and-adapters** layout. The dependency direction is always *outer → inner*:
 
 ```
-HTTP Request
-   │
-   ▼
-┌─────────────────────────────────────────┐
-│ api/controller/                         │  Thin REST controllers
-│   └─ delegate to use cases              │
-├─────────────────────────────────────────┤
-│ services/<feature>/                     │  Use case interfaces + impls
-│   ├─ business logic                     │
-│   └─ orchestrates side effects          │
-├─────────────────────────────────────────┤
-│ database/ + graph/                      │  Ports & adapters
-│   ├─ database & graph ports             │
-│   ├─ Fuseki, file, in-memory adapters   │
-│   └─ Jena transaction wrappers          │
-└─────────────────────────────────────────┘
-   │
-   ▼
-Apache Jena (RDF dataset, SPARQL, SHACL)
+   ┌──────────────────────────────────────────────────────────┐
+   │ api/controller/        ← HTTP boundary (Spring MVC)      │
+   │ api/dto/               ← request/response shapes         │
+   │     │                                                    │
+   │     ▼                                                    │
+   │ services/<feature>/    ← use cases (interfaces) +        │
+   │                          their implementations           │
+   │     │                                                    │
+   │     ▼                                                    │
+   │ database/DatabasePort  ← port interface                  │
+   │ database/inmemory/     ┐                                 │
+   │ database/implementations/http/  ← Fuseki adapter         │
+   │ database/implementations/file/  ← file adapter           │
+   └──────────────────────────────────────────────────────────┘
 ```
 
-A request lands on a controller, the controller calls a use-case interface, the implementation orchestrates one or more port operations, and the ports talk to the actual datastore. Tests can exercise the same use-case implementations against an in-memory adapter without spinning up Fuseki.
+## Use case interfaces
 
-## Controllers (`api/controller/`)
+Every action exposed by the application is a one-method `*UseCase` interface, e.g.:
 
-REST controllers are deliberately thin. Their responsibilities are limited to:
+```java
+public interface ListDatasetsUseCase {
+    List<String> listDatasets();
+}
+```
 
-- Mapping HTTP verbs and paths to use-case calls.
-- Decoding/encoding DTOs via MapStruct mappers.
-- Surfacing exceptions as appropriate HTTP status codes via the global exception handler.
-- Audit logging for write operations.
+A controller depends only on the use case interface; a service implements one or many use cases. This is a deliberate design choice — it keeps controllers small, makes individual operations easy to test, and lets services compose multiple ports without becoming god classes.
 
-Browse the controller package to see the canonical patterns. New endpoints should mirror the closest existing controller — same package layout, same delegation style, same DTO and mapper conventions.
+When you find yourself writing a private helper method on a controller that does any actual work, that's a signal it should be a new use case instead.
 
-## Use cases (`services/<feature>/`)
+## Services
 
-For each feature there is a `*UseCase` interface and at least one implementation. The interface is the contract used by controllers and tests; the implementation contains the orchestration.
+Services live under `services/<feature>/` and typically implement multiple use cases when they share state, repositories, or transaction boundaries. The `services/select/QueryDatasetService` is a good representative example — it implements `GetDatasetSchemaUseCase`, `ListGraphsUseCase`, `ListPrefixesUseCase`, and `ListDatasetsUseCase`, all of which need the same `DatabasePort`.
 
-There are roughly 80 of these interfaces across the backend. They look near-identical, but the indirection lets us:
+## The database port
 
-- Unit-test controllers by mocking the interface.
-- Swap in alternative implementations without touching callers.
-- Keep dependency direction one-way: controller → interface → implementation.
+`DatabasePort` is the only direct contact with persistent storage. There are two adapters:
 
-When you add a new feature, follow the same pattern even if the implementation is trivial.
+- **`database/implementations/http`** — talks to Fuseki over the SPARQL 1.1 protocol + Graph Store Protocol. The default in production.
+- **`database/implementations/file`** — reads/writes TriG or N-Quads files on disk. Development-only.
 
-## DTOs and mappers (`api/dto/`)
+Plus an **in-memory** path (`database/inmemory`) used heavily in tests and as a per-session working buffer for unsaved edits.
 
-Every HTTP request and response shape is modelled as a DTO record (or POJO). MapStruct-generated mappers convert between DTOs and the internal domain types. Hand-written conversion is acceptable only when the structural distance is too large for MapStruct.
+## REST controllers
 
-DTOs live next to their controllers in the package hierarchy.
+Controllers are thin and follow a strict skeleton:
 
-## Database layer (`database/`, `graph/`)
+```java
+@RestController
+@RequestMapping("api/datasets")
+@RequiredArgsConstructor
+public class DatasetRESTController {
 
-The database package defines the **ports** — abstractions over the dataset and over a single graph — and provides three **adapters**:
+    private static final Logger logger = LoggerFactory.getLogger(...);
 
-| Adapter | Use |
-| ------- | --- |
-| Fuseki HTTP | Production. Talks to a remote Fuseki via HTTP. |
-| File-based | Single-process file-backed mode. |
-| In-memory | Unit and integration tests. |
+    private final ListDatasetsUseCase listDatasetsUseCase;
+    private final DeleteDatasetUseCase deleteDatasetUseCase;
 
-The `database.databaseType` property in `application-database.yml` selects which adapter is wired in.
+    @Operation(summary = "...", description = "...", tags = {...})
+    @GetMapping
+    public List<String> listDatasets(...) {
+        logger.info("Received GET request: ...");
+        var result = listDatasetsUseCase.listDatasets();
+        logger.info("Sending response to GET ...");
+        return result;
+    }
+}
+```
 
-### Transactions
+Conventions worth knowing:
 
-All graph mutations follow the standard Jena pattern: open a transaction through the port, perform reads/writes, commit, and ensure the transaction is ended in `finally`. The repo's helpers wrap this so a missed commit can't leak. Every Jena `Dataset` operation lives inside a transaction — *do not* call low-level Jena APIs directly from a service; route them through the port.
+- **One controller per resource path tier.** `api/datasets`, `api/datasets/{name}/graphs`, `api/datasets/{name}/graphs/{uri}/classes`, etc. Controllers do not span tiers.
+- **Always `@Operation` annotated** — Swagger UI is part of the public deliverable.
+- **Always log on receive and on respond**, with the originating URL, dataset, and graph names where applicable. Audit log style.
+- **Use cases are constructor-injected via `@RequiredArgsConstructor` (Lombok).** No field injection.
+- **Read the `Origin` header into a parameter called `originURL`.** It is logged but never used for authorisation — auth lives outside the application.
 
-### Graph identifiers
+## DTOs and mapping
 
-Operations targeting a single graph take a graph-identifier value type that wraps the dataset name and the graph IRI. This type is the canonical representation throughout the backend; never pass two raw strings around.
+DTOs live under `api/dto/` and are organised by feature (`attributes/`, `associations/`, `enumentries/`, `migration/`, `ontology/`, `packages/`, `rendering/`). They are flat data carriers — Lombok `@Value` or `@Data` — with no behaviour.
 
-## SHACL pipeline (`shacl/`)
-
-The SHACL package contains:
-
-- A **generator** that walks the model and emits `sh:NodeShape` / `sh:PropertyShape` triples.
-- An **importer** that classifies incoming SHACL into custom shapes for storage.
-- An **exporter** that combines generated and stored shapes for output.
-
-The generator is deterministic — given the same model, it produces byte-for-byte identical output. This is the property that makes it safe to *not* persist generated shapes.
-
-## Migration template composer (`migration/`)
-
-The migration wizard's last step is implemented here. The composer:
-
-1. Reads the comparison result.
-2. Loads SPARQL templates from `resources/sparql-templates/migration/`.
-3. Substitutes class/property IRIs into the templates.
-4. Concatenates the blocks into a single SPARQL Update file.
-
-Each template handles one kind of change (class rename, property delete, attribute datatype change, …). Adding a new pattern means adding a new template and a corresponding entry in the composer.
+**MapStruct** generates DTO ↔ domain mappers. When you add a new DTO, also add the corresponding `*Mapper` interface and let MapStruct generate the implementation. The annotation processor runs as part of `mvn compile`.
 
 ## Exception handling
 
-A single `@ControllerAdvice` translates domain exceptions to HTTP status codes — not-found to 404, read-only to 409, validation to 400, everything else to 500 (logged with stack trace). Adding a new exception means adding a new handler method or extending an existing one.
+Domain exceptions live in `exception/<area>/` and are translated to HTTP responses by handlers in `exception/handlers/`. A new exception that needs a non-500 response *must* have a handler — there is no fallback that turns arbitrary exceptions into 4xx.
 
-## Audit logging
+## SPARQL templates
 
-Every write controller logs a structured audit line with timestamp, principal (if any), graph identifier, operation, and target. The change-history feature reads from the same channel — the audit log is the source of truth for history, not a redundant copy.
+Parameterised SPARQL queries live in `src/main/resources/sparql-templates/` and are loaded by classpath utility methods. The migration use cases use them heavily — see `sparql-templates/migration/*.sparql` for the templates that the wizard composes into the final UPDATE script. Keep templates here rather than inline string concatenation in Java.

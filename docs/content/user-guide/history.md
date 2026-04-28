@@ -1,59 +1,26 @@
 ---
-title: History and Undo
-sidebar_position: 9
+title: Reviewing Changes
+sidebar_position: 8
 ---
 
-# History and Undo
+# Reviewing Changes — Changelog, Undo, Restore
 
-Every write operation on a schema is recorded. You can review history, undo recent steps, or roll an entire schema back to an earlier point in time.
+Every edit you make to a graph is tracked. Three features make this tracking visible and reversible.
 
-![Change history](/img/screenshots/changelog.png)
+![Changelog](/img/screenshots/changelog.png)
 
-## Undo and redo
+## Undo / Redo
 
-Undo and redo cover the most recent operations on the active schema. Operations are atomic: a single user action (e.g. "save class") is one undo step, even if it touches many triples internally.
+Cross-cutting, session-level undo and redo for *every* edit — class, attribute, association, enum entry, package, namespace, ontology — is available from **Edit → Undo** / **Redo** or with **Ctrl+Z** / **Ctrl+Y**. There is no per-entity undo history; undo walks the whole graph's edit stream linearly.
 
-The undo stack is per-schema. Switching schemas does not clear it.
+The backend keeps up to 256 versions per graph by default (configurable) and compresses older states as you keep editing.
 
-## The history view
+## Changelog view
 
-The history page lists every change to the active schema in reverse chronological order. Each entry shows when it happened, what kind of action it was, what it targeted, and an expandable triple-level diff.
+**View → Changelog** opens a dedicated page that lists the change history of the currently selected graph: who changed what, what was added, updated, or deleted, and an inline diff for each change. The left pane groups changes by class, the right pane shows the full triple-level detail of the selected change with additions in green and deletions in red.
 
-Filters at the top of the list narrow by type of action, by target, or by time range.
+This is the view to use when reviewing what happened between two editing sessions, or when preparing a release note.
 
-## Inspecting a change
+## Restore a previous version
 
-Expanding an entry reveals the exact triples added and removed:
-
-```turtle
-# Removed
-ex:Breaker a rdfs:Class ; rdfs:label "Breaker" .
-
-# Added
-ex:Breaker a rdfs:Class ; rdfs:label "Circuit breaker" .
-```
-
-This is the same inline-diff format used in the comparison view ([Comparing schemas](./comparing-schemas)).
-
-## Restoring an earlier state
-
-Each history entry has a restore action. Choosing it asks you to confirm and then reverts the entire schema to the state immediately *before* that entry. Three things to know:
-
-1. Restoring is itself recorded in the history. You never lose changes.
-2. Restoring after a long sequence of changes can be a much larger operation than a single undo — review the diff before confirming.
-3. If the schema has snapshots, restoring does not affect them.
-
-## Author tracking
-
-If your installation is configured to identify users (see [Access control](/admin-guide/access-control)), history entries are tagged with that identity. Otherwise entries are anonymous.
-
-## What is and isn't tracked
-
-| Tracked | Not tracked |
-| ------- | ----------- |
-| Class / package / attribute / association / enum-entry CRUD. | Diagram zoom and pan state. |
-| Custom SHACL imports. | Filter view selections (session-local). |
-| Renames, including ripple updates to associations. | Read-only mode toggles. |
-| Layout changes (when persisted). | Snapshot creation (recorded separately). |
-| Schema-level imports (replace and merge). | |
-| Restore-to operations. | |
+From the changelog you can restore the graph to any earlier point. This creates a new entry at the top of the history (so it is itself undoable) and resets every class, package, and namespace to the state it had at that time. It does not touch the custom SHACL content unless the SHACL was also part of the restored history.

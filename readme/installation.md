@@ -1,9 +1,4 @@
----
-title: Installation
-sidebar_position: 2
----
-
-# Installation
+# RDFArchitect — Installation
 
 Three ways to get RDFArchitect running, in order of effort.
 
@@ -12,6 +7,8 @@ Three ways to get RDFArchitect running, in order of effort.
 3. [Production deployment notes](#3-production-deployment-notes)
 
 All three options assume that a **SPARQL 1.1-compliant triple store** is reachable from the backend. RDFArchitect is developed against **Apache Jena Fuseki** and that is the recommended choice.
+
+---
 
 ## 1. Docker Compose
 
@@ -26,7 +23,7 @@ The repository ships a `docker-compose.yaml` that builds the backend and fronten
 
 From the repository root:
 
-```bash
+```
 cd docker
 docker compose up --build
 ```
@@ -42,7 +39,7 @@ The first start takes a few minutes because the Spring Boot and SvelteKit images
 
 `Ctrl+C` in the terminal where compose is running, then:
 
-```bash
+```
 docker compose down
 ```
 
@@ -50,7 +47,7 @@ docker compose down
 
 If you do not yet have a triple store, the simplest way to get one is:
 
-```bash
+```
 docker run --rm -p 3030:3030 \
   -e ADMIN_PASSWORD=admin \
   stain/jena-fuseki
@@ -59,6 +56,8 @@ docker run --rm -p 3030:3030 \
 Then create a dataset called `default` via the Fuseki UI at `http://localhost:3030`. (Any TDB2-backed dataset will do.)
 
 For a more durable setup, mount a volume under `/fuseki` in the Fuseki container so that the data survives restarts.
+
+---
 
 ## 2. Local development setup
 
@@ -76,7 +75,7 @@ Useful if you want to modify the source, build from a branch, or run without Doc
 
 From the repository root:
 
-```bash
+```
 cd backend
 mvn spring-boot:run
 ```
@@ -87,13 +86,15 @@ The backend starts on port `8080`. Swagger UI is available at `http://localhost:
 
 In a second terminal:
 
-```bash
+```
 cd frontend
 npm install
 npm run dev
 ```
 
 The frontend starts on port `1407` at `http://localhost:1407` and talks to the backend directly (no nginx in front).
+
+---
 
 ## 3. Production deployment notes
 
@@ -104,6 +105,29 @@ RDFArchitect has no built-in authentication or authorisation. For a production d
 - Configure Fuseki to persist to a mounted volume and include that volume in your backup policy.
 - Set the cookie flags in `application.yml` (`same-site`, `secure`, `http-only`) for a production environment — the defaults in the repository are development values.
 
+### Configuration highlights
+
+All configuration values below are defined in the backend's `application.yml` and can be overridden at runtime with environment variables (Spring Boot's standard mechanism: `DATABASE_HTTP_ENDPOINT`, `FRONTEND_URL`, etc.).
+
+| Property                 | Default                  | Description                                                                  |
+| ------------------------ | ------------------------ | ---------------------------------------------------------------------------- |
+| `database.databaseType`  | `http`                   | `http` for Fuseki (recommended), `file` for a local TriG/N-Quads file store. |
+| `database.http.endpoint` | `http://localhost:3030`  | URL of the SPARQL 1.1 endpoint.                                              |
+| `database.defaultDataset`| `default`                | Name of the default dataset inside the triple store.                         |
+| `frontend.url`           | `http://localhost:1407`  | Frontend URL (used for CORS).                                                |
+| `frontend.accessRoute`   | `/api`                   | API base path seen by the frontend.                                          |
+| `graph.maxVersions`      | `256`                    | Per-graph history depth.                                                     |
+| `graph.compressCount`    | `1`                      | Internal tuning for history compression.                                     |
+| `rendering.renderer`     | `svelteflow`             | Default diagram renderer. Alternative: `mermaid`.                            |
+
+The frontend has a single runtime variable:
+
+| Variable              | Default (Docker) | Description                                           |
+| --------------------- | ---------------- | ----------------------------------------------------- |
+| `PUBLIC_BACKEND_URL`  | `/api`           | Where the frontend expects to find the backend.       |
+
+In container deployments this is injected at startup by `frontend/docker-entrypoint.sh`.
+
 ### File upload size
 
 Default max upload size is **50 MB**, which is sufficient for most ENTSO-E profiles. If you need larger uploads, raise both:
@@ -112,6 +136,16 @@ Default max upload size is **50 MB**, which is sufficient for most ENTSO-E profi
 - `spring.servlet.multipart.max-request-size`
 - `server.tomcat.max-http-form-post-size`
 - `server.tomcat.max-swallow-size`
+
+### Backups
+
+RDFArchitect does not hold long-term state of its own — everything lives in the triple store. Backup policy is therefore a **triple-store backup policy**:
+
+- Fuseki can be backed up via its HTTP API (`/$/backup/<dataset>`), which produces a gzipped N-Quads dump.
+- A simple cron job that calls the backup endpoint once a day and rotates the last N dumps is usually enough.
+- Snapshots created from the UI are stored as separate datasets inside the same Fuseki instance and are covered by the same backup policy.
+
+---
 
 ## Verifying the installation
 
@@ -122,4 +156,4 @@ Once the application is up:
 3. The left navigation should show a dataset called `default`. If it does, the backend is talking to the triple store.
 4. Import a small test file (TTL or RDF/XML). If it shows up in the navigation tree, the end-to-end path is working.
 
-If any of these steps fail, see [Troubleshooting](./troubleshooting) and the [FAQ](/reference/faq).
+If any of these steps fail, see [FAQ & troubleshooting](faq.md).

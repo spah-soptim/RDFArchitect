@@ -1,73 +1,37 @@
 ---
-title: SHACL
-sidebar_position: 8
+title: SHACL — Constraints and Validation
+sidebar_position: 7
 ---
 
-# SHACL Constraints
+# SHACL — Constraints and Validation
 
-SHACL ([Shapes Constraint Language](https://www.w3.org/TR/shacl/)) is the W3C standard for validating RDF data. RDFArchitect treats SHACL as a first-class part of the schema and supports two kinds of shapes side by side: **generated** and **custom**.
+SHACL (Shapes Constraint Language) is how CGMES and ENTSO-E express the data-quality rules that an exchange file must satisfy: "every `ACLineSegment` must have exactly one `length`", "every `Terminal` must reference a `ConductingEquipment`", and so on. RDFArchitect treats SHACL as a first-class citizen.
 
 ![SHACL view](/img/screenshots/shacl.png)
 
-## Generated vs. custom shapes
+## Two sources of SHACL
 
-| | Generated | Custom |
-| - | --------- | ------ |
-| **Source** | Auto-derived from the schema. | Authored by you (or imported). |
-| **Lifecycle** | Recomputed every time the model changes. | Persists with the schema until you change it. |
-| **Editable in UI** | No — change the schema instead. | Yes — via SHACL upload or external editing. |
-| **Persisted** | Not stored in the schema. | Stored alongside the schema. |
-| **Exported** | Yes (when you select "include generated"). | Yes, always. |
+RDFArchitect distinguishes two kinds of shapes and stores them separately:
 
-## What gets generated
+- **Generated SHACL.** Produced by RDFArchitect from the schema itself. Every class becomes a `NodeShape`; every attribute and association becomes a `PropertyShape` with `sh:path`, `sh:datatype` or `sh:class`, `sh:minCount`, `sh:maxCount`, and `sh:in` (for enums) derived from what you modelled. This set is always in sync with the current state of the graph.
+- **Custom SHACL.** Shapes that you import or author separately — typically the official SHACL files that ship with a CGMES or ENTSO-E release. These are preserved byte-for-byte and are *not* regenerated when the schema changes.
 
-For every class in the model RDFArchitect emits:
+When you view SHACL for a graph, both sets are shown and clearly labelled.
 
-- A `sh:NodeShape` with `sh:targetClass` pointing to the class.
-- One `sh:property` per attribute, including `sh:datatype`, `sh:minCount`, and `sh:maxCount` derived from the multiplicity.
-- One `sh:property` per association, with `sh:class` and the same cardinality treatment.
-- For enumerations, a `sh:in` constraint listing the allowed entries.
-- Cardinality constraints inherited from the parent class.
+## Viewing SHACL at graph level
 
-A typical CIM class produces roughly 10–30 generated shapes — enough to validate that instance data matches the structural model without any manual SHACL authoring.
+**View → Constrains (SHACL)** opens the full-view dialog. Two tabs: **Generated** (read-only TTL output) and **Custom** (editable TTL). The custom tab has inline TTL syntax highlighting and validates as you type; the save button stays disabled until the TTL parses.
 
-## What custom shapes are for
+## Viewing SHACL at class level
 
-Generated shapes cover *structural* constraints. Custom shapes are where you express constraints that aren't derivable from the schema:
+In the class editor, every attribute and association row has a SHACL icon. Clicking it opens the **property-specific SHACL dialog** — the subset of both generated and custom shapes that target that exact property on that exact class. This is by far the fastest way to answer the question *"what constraint is enforced on this attribute?"* without leaving the class you are looking at.
 
-- Pattern matches (`sh:pattern` for ID formats).
-- Value ranges (`sh:minInclusive`, `sh:maxInclusive`).
-- Cross-property invariants via `sh:sparql`.
-- Conditional shapes via `sh:and`, `sh:or`, `sh:xone`, `sh:not`.
-- Domain-specific severity levels and messages.
+A similar dialog exists at the class level to inspect the full `NodeShape` of the selected class.
 
-## Inspecting SHACL
+## Importing custom SHACL
 
-Three views, depending on the question:
-
-- **Class-specific view** — inside the class editor, showing every shape that targets the current class. Generated shapes are tagged accordingly; custom shapes are clearly distinguished.
-- **Property-specific view** — focuses on a single property: every shape (across the schema) that constrains it, with its severity, message, and any custom predicates.
-- **Full schema view** — every shape in the schema in one searchable list, filterable by generated/custom, target class, property path, or constraint type.
-
-## Importing SHACL
-
-Two paths:
-
-- **Inside an imported schema file.** Any `sh:NodeShape` / `sh:PropertyShape` reachable from `rdf:type` is recognised and stored as custom shapes.
-- **Into an existing schema.** A dedicated SHACL upload dialog adds shapes without touching the existing model. Conflicts (e.g. an imported shape with the same IRI as an existing one) are surfaced before they are committed.
+**File → Import → Constrains (SHACL)** uploads a SHACL file into the currently selected graph. Supported formats are the same as for schema import (TTL, RDF/XML, N-Triples); TTL is the default and recommended format.
 
 ## Exporting SHACL
 
-The SHACL export lets you choose generated, custom, or both, and the serialization (Turtle is the default).
-
-Exporting "both" produces a file that any standard SHACL validator (Apache Jena's `shacl validate`, TopBraid SHACL, pySHACL, …) will accept directly.
-
-## Severity and messages
-
-Custom shapes can carry `sh:severity` (`sh:Violation`, `sh:Warning`, `sh:Info`) and `sh:message` per language tag. Both are surfaced in the inspection views and preserved on round-trip.
-
-Generated shapes are emitted with `sh:Violation` severity by default.
-
-## Working without SHACL
-
-If you don't care about constraints, you can ignore the SHACL views entirely. Generated shapes are produced on demand and never bloat your stored schema; custom shapes only exist if you import them.
+**File → Export → Constrains (SHACL)** downloads a SHACL file. The dialog asks which dataset and graph to use, which parts to include (generated, custom, or both), and in which format. TTL is the default.
