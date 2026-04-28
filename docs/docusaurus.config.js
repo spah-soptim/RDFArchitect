@@ -7,8 +7,8 @@ const config = {
   tagline: 'Web-based modeling for CIM/CGMES RDF schemas and SHACL constraints',
   favicon: 'img/favicon.svg',
 
-  url: 'https://soptim.github.io',
-  baseUrl: '/RDFArchitect/',
+  url: 'https://rdfarchitect.soptim.de',
+  baseUrl: '/',
 
   organizationName: 'SOPTIM',
   projectName: 'RDFArchitect',

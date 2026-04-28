@@ -15,7 +15,5 @@ Search is the fastest way to find, for example, every class with `Terminal` in i
 
 - **Ctrl+Z / Ctrl+Y** — Undo and redo, in every editing context.
 - **URL parameters** — The main editor URL accepts `?dataset=...&graph=...&package=...` to jump directly to a given location. This is how deep links from external tools or documents should point at RDFArchitect content.
-- **Class context menu** — Right-click on a class in the diagram to focus it (centre + highlight), open its class editor, or hide it.
-- **Diagram context menu** — Right-click on empty diagram space for layout actions (auto-layout, fit to view) and to switch between SvelteFlow and Mermaid rendering.
 - **Save snapshot before risky changes** — If you are about to try a large migration or a destructive delete, creating a snapshot first gives you a restore point that is independent of the undo history.
 - **Filter view** — The view filter dialog can hide external packages or constrain the diagram to a specific stereotype, which keeps large CGMES releases navigable.

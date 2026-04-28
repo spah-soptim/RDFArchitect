@@ -37,7 +37,7 @@ Schemas: **RDF/XML (.rdf), Turtle (.ttl), N-Triples (.nt)**. SHACL: the same thr
 
 ### Can I import multiple profiles at once?
 
-Not as a single operation. Each profile is imported as its own graph. You can import many profiles into the same dataset, one after another, and they will appear side-by-side in the navigation tree.
+Yes, its possible to select multiple profiles at once during the import. You can also directly import .zip files with profiles in the root folder, which then get imported.
 
 ### My import says the dataset is read-only. What now?
 
@@ -117,10 +117,6 @@ Not from the UI as of 1.0.0. Snapshots are stored as datasets in the triple stor
 Last write wins. RDFArchitect does not currently have multi-user conflict resolution. In practice, teams coordinate per-graph ownership (one editor per profile at a time) or use the snapshot + review workflow for collaborative work.
 
 ## Performance
-
-### The diagram is slow to render on a large package.
-
-Switch the renderer. From a right-click on the diagram canvas you can toggle between SvelteFlow (default) and Mermaid. Mermaid tends to be faster for very large, dense packages but is less interactive. You can also use the view filter to hide external packages that are not relevant to the current task.
 
 ### The changelog view is slow.
 

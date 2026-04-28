@@ -28,7 +28,3 @@ The frontend is a static SPA with one runtime variable, rewritten at container s
 | Variable              | Default (Docker) | Description                                           |
 | --------------------- | ---------------- | ----------------------------------------------------- |
 | `PUBLIC_BACKEND_URL`  | `/api`           | Where the frontend expects to find the backend.       |
-
-## File-based storage (no Fuseki)
-
-For small or offline use you can set `database.databaseType=file`. In that mode the backend stores data as TriG or N-Quads files under `database.file.endpoint`. This is not recommended for anything beyond quick experiments — there is no concurrent access protection and no server-side SPARQL engine.

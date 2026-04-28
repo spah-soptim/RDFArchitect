@@ -8,7 +8,7 @@ sidebar_position: 4
 ## Recommended deployment
 
 - A single Fuseki instance, TDB2-backed.
-- One Fuseki dataset per RDFArchitect dataset (typically: `default`, plus one per active snapshot).
+- One Fuseki dataset per snapshot.
 - Persistent volume under `/fuseki` with enough space for schemas, SHACL, version history, and snapshots (a few hundred MB per active CGMES release is typical).
 
 ## Access control between RDFArchitect and Fuseki
@@ -19,7 +19,4 @@ If you put Fuseki behind basic auth or an HTTP-level auth proxy, RDFArchitect do
 
 ## Read-only users and snapshots
 
-RDFArchitect's read-only model is per dataset, enforced by the backend. It is **not** a Fuseki-level protection — a user with direct Fuseki access can still modify any dataset. For stronger guarantees, either:
-
-- Keep Fuseki on a private network reachable only by the backend.
-- Run two Fuseki instances (read-write for editing, read-only for snapshots) and route reads and writes accordingly. This is not out-of-the-box; it requires a routing layer in front of Fuseki.
+RDFArchitect's read-only model is per dataset, enforced by the backend. It is **not** a Fuseki-level protection — a user with direct Fuseki access can still modify any dataset.
