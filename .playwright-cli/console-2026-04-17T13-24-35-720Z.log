@@ -1,9 +1,0 @@
-[898945927ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:1407/@vite/client:864
-[898947804ms] [LOG] started Building navObj with existingNavObj:  null @ http://localhost:1407/src/routes/mainpage/packageNavigation/build-nav-object.js:66
-[898948591ms] [LOG] finished Building navObj:  [] @ http://localhost:1407/src/routes/mainpage/packageNavigation/build-nav-object.js:84
-[925818322ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:1407/@vite/client:864
-[925819459ms] [LOG] started Building navObj with existingNavObj:  null @ http://localhost:1407/src/routes/mainpage/packageNavigation/build-nav-object.js:66
-[925819621ms] [LOG] finished Building navObj:  [] @ http://localhost:1407/src/routes/mainpage/packageNavigation/build-nav-object.js:84
-[930098306ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:1407/@vite/client:864
-[930099381ms] [LOG] started Building navObj with existingNavObj:  null @ http://localhost:1407/src/routes/mainpage/packageNavigation/build-nav-object.js:66
-[930099432ms] [LOG] finished Building navObj:  [] @ http://localhost:1407/src/routes/mainpage/packageNavigation/build-nav-object.js:84

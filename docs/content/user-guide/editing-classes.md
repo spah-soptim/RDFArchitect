@@ -3,11 +3,13 @@ title: Editing Classes
 sidebar_position: 4
 ---
 
+import classEditorScreenshot from '@site/static/img/screenshots/class-editor.png';
+
 # Editing Classes
 
 The class editor on the right-hand side is the main surface for modelling work. It is laid out so that everything about a single class is reachable from one scroll, without navigating away.
 
-![Class editor](/img/screenshots/class-editor.png)
+<img src={classEditorScreenshot} alt="Class editor" className="screenshot--narrow" />
 
 ## What you can edit
 
@@ -26,6 +28,6 @@ The class editor on the right-hand side is the main surface for modelling work. 
 
 The editor does not wait for save to tell you something is wrong. Label collisions, empty required fields, duplicate attribute names, invalid URI components, and SHACL violations caused by the pending changes are all reported inline as you type. The **Save** button stays disabled while there are unresolved issues, and a list of violations is shown above the button.
 
-## Discard or adopt unsaved changes
+## Discard or save unsaved changes
 
-If you switch classes while there are unsaved edits, RDFArchitect asks whether to save, discard, or **adopt** them. "Adopt" means: carry the pending changes over to the next class where they still apply — useful when you are making the same correction across a family of classes.
+If you switch classes while there are unsaved edits, RDFArchitect asks whether to save the current class or discard the pending changes before opening another class. Saving commits the edits to the current class; discarding drops them.

@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Administrator's Guide
 
-Topics for the person operating RDFArchitect for a team: configuration, triple store, backups, access control, and common operational tasks.
+Topics for the person operating RDFArchitect for a team: configuration, triple store, backups, security, and common operational tasks.
 
 ## Architecture at a glance
 
@@ -26,8 +26,7 @@ This mapping is deliberately transparent: you can inspect RDFArchitect's state w
 - [Configuration](./configuration) — settings reference.
 - [Apache Jena Fuseki](./fuseki) — triple-store guidance.
 - [Backups](./backups) — backup and restore.
-- [Access control](./access-control) — auth patterns.
+- [Security](./security) — trusted-network and reverse-proxy guidance.
 - [Monitoring](./monitoring) — health and metrics.
 - [Upgrading](./upgrading) — version-to-version notes.
-- [Scaling](./scaling) — capacity planning.
 - [Troubleshooting](./troubleshooting) — operational issues.

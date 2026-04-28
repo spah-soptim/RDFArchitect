@@ -22,7 +22,6 @@ const sidebars = {
         'user-guide/sharing-and-exporting',
         'user-guide/read-only-mode',
         'user-guide/search-and-tips',
-        'user-guide/screenshots',
       ],
     },
     {
@@ -57,10 +56,9 @@ const sidebars = {
     'admin-guide/configuration',
     'admin-guide/fuseki',
     'admin-guide/backups',
-    'admin-guide/access-control',
+    'admin-guide/security',
     'admin-guide/monitoring',
     'admin-guide/upgrading',
-    'admin-guide/scaling',
     'admin-guide/troubleshooting',
   ],
 };

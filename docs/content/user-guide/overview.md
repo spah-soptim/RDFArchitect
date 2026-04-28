@@ -37,4 +37,3 @@ The rest of the editor is built on top of those three. The navigation tree reads
 10. **[Sharing and exporting](./sharing-and-exporting)**.
 11. **[Read-only mode](./read-only-mode)**.
 12. **[Search & tips](./search-and-tips)**.
-13. **[Screenshots](./screenshots)**.

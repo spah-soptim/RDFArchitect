@@ -27,6 +27,20 @@
   max-width: 100%;
 }
 
+.markdown img.screenshot--medium,
+.markdown img.screenshot--narrow {
+  display: block;
+  margin: 1rem 0 1.5rem;
+}
+
+.markdown img.screenshot--medium {
+  width: min(100%, 620px);
+}
+
+.markdown img.screenshot--narrow {
+  width: min(100%, 460px);
+}
+
 .markdown h1 + p,
 .markdown h2 + p {
   color: var(--ifm-color-emphasis-700);

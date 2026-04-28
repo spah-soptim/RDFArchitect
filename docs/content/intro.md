@@ -10,7 +10,7 @@ Documentation for **RDFArchitect 1.0.0** — the open-source web-based editor fo
 
 RDFArchitect is a web-based tool for **visualising, editing, and sharing RDFS schemas with CIM extensions** — as used in CGMES and the ENTSO-E Network Code Profiles — together with their **SHACL constraints**. It is an open-source alternative to proprietary CIM/RDF modelling tools.
 
-![RDFArchitect editor](/img/screenshots/editor.png)
+![RDFArchitect homepage](/img/screenshots/homepage.png)
 
 ## Who should read what
 
@@ -23,7 +23,6 @@ If you are new to RDFArchitect, start with the **User Guide**. Otherwise, the ta
 | A **project manager** / product owner        | [Features](/reference/features)                                       | [User Guide — sharing](/user-guide/sharing-and-exporting), [migration](/user-guide/migration)    |
 | An **administrator** deploying the service   | [Installation](/admin-guide/installation)                             | [Administrator's guide](/admin-guide/overview), [FAQ](/reference/faq)                            |
 | A **developer** contributing or extending    | [Developer guide](/developer-guide/overview)                          | [`CONTRIBUTING.md`](https://github.com/SOPTIM/RDFArchitect/blob/main/.github/CONTRIBUTING.md)    |
-| Just looking for screenshots                 | [Screenshots](/user-guide/screenshots)                                |                                                                                                  |
 
 ## What you can do with it
 

@@ -57,10 +57,6 @@ The default upload limit is 50 MB. For larger files, an administrator can raise 
 
 **Ctrl+Z** or **Edit → Undo**. Undo works across every kind of edit (classes, attributes, associations, packages, namespaces, ontology, SHACL). Up to 256 steps of history per graph.
 
-### I was switching between classes and RDFArchitect asked whether to "adopt" changes. What does that mean?
-
-You had unsaved edits on the class you were leaving. "Adopt" means: carry those changes over to the class you are opening, where they still make sense. This is useful when you are making the same correction across a family of classes (for example, adding the same new attribute everywhere). Choose "Discard" to drop the changes, or "Save" to commit them to the current class before switching.
-
 ### Why can't I edit this class / package?
 
 Three possibilities:
@@ -114,7 +110,7 @@ The recipient needs network access to the same RDFArchitect instance. Snapshots 
 
 ### Can I un-share a snapshot?
 
-Not from the UI as of 1.0.0. Snapshots are stored as datasets in the triple store; an administrator can delete the corresponding dataset from Fuseki directly. See the [administrator's guide](/admin-guide/access-control#snapshot-links).
+Not from the UI as of 1.0.0. Snapshots are stored as datasets in the triple store; an administrator can delete the corresponding dataset from Fuseki directly. See the [administrator's guide](/admin-guide/security#snapshot-links).
 
 ### Two people are editing the same graph at the same time. What happens?
 
